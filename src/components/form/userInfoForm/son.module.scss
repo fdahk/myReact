@@ -1,0 +1,31 @@
+
+.form_container {
+    width: 400px;
+    height: 600px;
+    background-color: white;
+    color: black;
+    position: relative;
+}
+
+.form_title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+.form_body {
+    width: 100%;
+    height: 70%;
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+}
+
+.form_button {
+    width: 100%;
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    bottom: 0;
+}
