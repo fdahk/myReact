@@ -19,5 +19,4 @@
             只要 key 没变，React 会复用原来的 DOM 节点和组件实例，不会
         Vue中同样如此 
     6.align-items 和 align-selfs
-
     7.这个组件实现全局可用是通过全局函数操作实现的

@@ -1,0 +1,22 @@
+.container {
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: gray;
+}
+.box {
+    box-sizing: border-box;
+    height: 100%;
+    width: 100%;
+    overflow-y: auto;
+}
+.virtual_list {
+    box-sizing: border-box;
+    height: 100%;
+    width: 100%;
+    min-width: max-content;
+    display: flex;
+    flex-direction: column;
+    background-color: white;
+}
