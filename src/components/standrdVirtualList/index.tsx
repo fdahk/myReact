@@ -1,4 +1,4 @@
-import { VirtualList } from "./VirtualList";
+import { VirtualList } from "./virtualList";
 
 const data = Array.from({ length: 10000 }, (_, i) => `Item ${i + 1}`);
 

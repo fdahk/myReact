@@ -268,6 +268,171 @@
     1.React.Key 是 React 中用于唯一标识列表中每个元素的特殊属性。它的作用和原理如下
         React.Key 的定义： type Key = string | number;
     2.指定函数的泛型返回值： function identity<T>(arg: T): T { return arg; }
+    3.什么是HOC(高阶组件)，常用方式有哪些
+        用于复用组件逻辑的技术，本质上是一个函数，接收一个组件作为参数，返回一个新的组件
+        属性代理：二次加工组件，添加属性
+            示例：第一层：withCard(color)，接收一个颜色参数，返回一个函数。
+                第二层：(Component)，接收一个组件参数，返回一个新的函数组件。
+                第三层：(props) => { ... }，这个函数组件接收 props，返回 JSX。
+            const withCard = (color) => (Component) => {
+                return (props) => {
+                    const hocStyle = {
+                    margin: "8px",
+                    padding: "8px",
+                    border: '1ps solid #ccc', // 这里应该是 '1px solid #ccc'
+                    borderRadius: "4px",
+                    background: color
+                    }
+
+                    return (
+                    <div style={hocStyle}>
+                        <Component {...props} color={color} />
+                    </div>
+                    )
+                }
+            }
+        反向代理：
+    4.如何实现一个withRouter：考察Hoc 和 context 
+        ....
+    5.react-router-dom v6 提供了哪些新的api
+        没有以前的component了，均使用element 
+        有哪些API：
+            useNavagate :编程式导航（跳转路由）,按钮跳转、表单提交后跳转
+            useLocation :获取当前路由信息	读取路径、参数、状态等
+            useParams :获取路由动态参数	详情页、参数化路由
+            useRoute :声明式配置和渲染路由	嵌套路由、模块化路由
+    6.useRoute 是如何使用的？ 如何使用其进行动态路由加载
+        对标VUE的router
+    动态路由加载示例：
+        const DynamicList = React.lazy(()=> import('./List'));
+        { path:'/list', element: <Suspense fallback={ <div>loading...</div> }> <DynamicList /> </Suspense> }
+    DynamicList 是一个“懒加载组件”，只有用到时才会去请求 ./List 这个模块
+        React.lazy(() => import('./List')) 这是 React 官方提供的组件懒加载方案。只有组件真正需要渲染时，才会去加载对应的模块，减少首屏包体积，提高性能
+    Suspense 是 React 用于包裹懒加载组件的“占位符”组件
+    fallback 属性指定“加载过程中显示的内容”，比如 loading 动画、提示等
+    7.redux 的中间件是怎么实现的
+        redux将副作用给 中间件进行处理
+        执行流程：将输入按编排过的函数顺序依次处理
+            fnl, fn2, fn3
+            compose([fn1,fn2,fn3])(args);
+            fn1(fn2(fn3(args)))
+    8.为什么之前react 组件要写import React from 'react'， 现在不用
+        对于react，解析jsx语法需要Babel，编译成react.createElement（）等语法
+        bebal之前时classic模式，现在时automatic模式，会实现自动引入
+    9.react是一个运行时框架，需要编译
+    10.stack reconciler 和 fiber reconciler， 为什么后者能解决递归爆栈问题
+        前者：递归处理DOM树
+        后者：每个节点都维护了child、return、sibling状态，优化遍历方式（将树变成了链表
+    11.react中有哪几种数据结构，是干嘛的
+        四种：
+            v-dom(或者叫element)：通常是函数组件的返回值或render函数的返回值，本质是一个对象
+            current fiber： 当前react内存中，表示当前数据状态的核心数据结构
+            workInprogress fiber： 状态更新时生成，在react 完成调和、commitWork 更新后，转变成current fiber，两者配合实现双缓存
+            真实DOM
+            react 调和的过程：就是 currentfiber和v-dom 对比，生成子组件的 workInProgress Fiber 的过程
+    12.react 的更新流程：
+        beginWork：
+            使用 v-dom 和 current fiber 去生成子节点的 workInProgress Fiber期间会执行函数组件、类组件，diff子节点
+            给我需要变更的节点，打上 effectTag
+            -增placement 20010
+            删deletion 8100
+            改 update4 0100
+            增和改 placmentAndUpdate0110
+        completeWork：
+            向上走
+            把我所有有effectTag 的元素，串联成一个effectList构建真实的DOM，但是不挂载在界面上
+        commitWork：
+            commitBeforeMutationEffect
+            commitMutationEffects
+            处理 effectList
+            更新界面
+            workInProgress Fiber 会切换成current fiber
+            commitLayoutEffects
+            -执行 useLayoutEffect,cdm,cdu
+    13.闭包陷阱：
+        什么是闭包：一个函数返回一个数据，外部可以访问这个数据，此时形成闭包
+        常见useState 和 useEffect的闭包：通常发生于回调函数中调用值（直接使用变量无法获取最新值）一般采用函数式更新或ref解决闭包陷阱
+        产生的原因：react中hook 是以链表的形式存在，执行逻辑依赖于deps，导致无法获取最新值
+    14.在react中如何实现渲染的控制：
+        情景：父组件的交互触发子组件的渲染，但实际上并没有执行子组件的任何代码：
+            解法：增加一个中间函数处理
+7.26：
+    1.为什么点击事件的函数一定要写箭头函数，不能直接调用：onClick={() => handleClickHeaderIcon(item.method)}
+        直接写：函数会在组件渲染时立即执行，而不是点击时执行，每次渲染都会执行一次，点击时不会执行任何操作
+        箭头函数写法：每次渲染都会创建一个新的函数，这里也可以用useCallback、useMemo等进行性能优化
+        原理：
+            JS的两种调用方式：
+            // 1. 函数引用（传递函数本身）
+            const func = () => console.log("Hello");
+            const reference = func; // 传递函数引用
+            // 2. 函数调用（立即执行函数）
+            const result = func(); // 立即执行，返回 undefined
+            // React 期望接收一个函数引用
+            <button onClick={functionReference}></button>
+            // React 内部处理
+            button.addEventListener('click', functionReference);
+    2.函数组件的声明方式： 
+        箭头函数写法：
+            const FileUploader: React.FC<FileUploaderProps> = ({ ... }) => {}
+            React.FC = React Function Component（React函数组件类型）
+        函数声明写法：
+            function ChatView() { return <div>Hello World</div>; }
+        比较：
+            作用域提升(Hoisting)    会被提升到作用域顶部	     不会被提升
+            this绑定	            有独立的this上下文	        继承外部this
+            调试友好	            函数名在调用栈中清晰显示     可能显示为匿名函数
+        选择：
+            声明式：组件是页面级组件，需要良好的调试体验，遵循Next.js等框架的官方建议
+            箭头函数： 组件是子组件或工具组件，需要保持this上下文
+    3.JS原生http请求API: fetch : 标准使用
+         const response = await fetch(`http://127.0.0.1:3007/api${url}`, {
+             method: 'POST',
+             headers: {
+               'Content-Type': 'application/json',
+               'Authorization': `Bearer ${token}`,
+               'Accept': 'application/json'
+             },
+             body: JSON.stringify(data) 
+        });
+    4.实现redux ：
+        核心：实现发布订阅
+    5.useroute 的原理：
+        核心：将组件间的嵌套 转换成对象的形式，将对象以树的形式储存，根据URL匹配渲染对应的组件
+    6.React.children.forEach(children,(node))
+          React 提供的遍历子元素的工具方法,遍历 React 组件的 children 属性，对每个子元素执行回调函数
+    7.为什么选择messageChannel 让出执行权
+        浏览器：一般浏览器的帧率是60(16.666 ms 一帧)
+        在一帧中浏览器做了什么：
+            1.宏任务 | 微任务 | requestAnimationFramework | layout(绘制) | requestIdelCallback
+        如何处理某一帧执行时间过长导致的卡顿（绘制阶段过晚执行）？
+            对一个宏任务进行切片：
+                有哪些切片的方法：
+                    1.promise 执行？ 不行，异步执行仍然需要按顺序执行
+                    2.setTimeout： 不行，递归循环环境下会有4ms的延迟
+                    3.requestIdelCallback：不行，兼容性问题，50ms渲染问题
+                    4.messageChannel：可以，
+    8.RN 和 react 在跨端架构上有什么区别：
+        webview： 嵌入式浏览器，相当于在APP中嵌入一个微型浏览器
+        JSBridge: 
+        react最终会编译成div标签
+        RN： 编译成类似div，调用api
+
+7.27：
+    1.get请求的特点：
+        没有请求体：GET 请求不允许有请求体
+        只有查询参数：通过 URL 后面的 ? 传递参数 和 请求头：认证信息、内容类型等
+    2.Lodash 是一个JavaScript 实用工具库，提供了大量常用的函数来简化 JavaScript 编程： 数组操作、对象操作、防抖、节流等函数均有封装
+    3.CSS Modules 的作用机制
+        使用.module.scss，这意味着启用了 CSS Modules。CSS Modules 会把你的类名（如 .video-controls）编译成一个独一无二的名字
+        必须通过 import styles from './control.module.scss' 这种方式引入，并用 className={styles['video-controls']} 这种写法来使用样式
+            或点语法使用，
+        推荐使用方括号语法的原因：
+            更直观：类名和 SCSS 文件中的完全一致
+            无需转换规则：连字符 → 驼峰命名
+            支持特殊字符：可以包含连字符、可以数字开头等
+            IDE 支持更好：自动补全和跳转更准确
+    4.hook设计模式：状态管理hook、 副作用hook、 业务逻辑hook
+    
 
 
 React事件系统剖析：
