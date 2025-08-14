@@ -659,3 +659,202 @@ React数据与视图、生命周期等 ：
                 return this.props.children;
             }
             }
+
+8.13:
+    1.重排：
+        定义：浏览器为计算元素的几何与位置而进行的布局计算（Reflow）。代价高于仅重新着色的重绘（Repaint）。
+        常见触发：修改会影响布局的样式（width/height/margin/padding/border/position/font-size/line-height/display）；DOM 结构变化；读写强制同步布局属性
+            （如 offsetWidth/Height、clientWidth/Height、scrollTop/Left、getBoundingClientRect、getComputedStyle）。
+        优化：
+            读写分离（先批量读，再批量写），将操作放进同一帧 requestAnimationFrame；高频事件节流/防抖；
+            动画优先使用不会触发布局的属性（transform、opacity），必要时 will-change；
+            降低影响范围（content-visibility: auto、contain）；虚拟列表减少真实节点数；避免表格大布局抖动。
+
+    2.babel
+        作用：把“新语法/提案（ESNext/TS/JSX）”转换为目标环境可执行的旧语法，同时按需注入运行时辅助/垫片。
+        关键：Parse → AST → 插件/预设变换 → 代码 + SourceMap。
+        常用：
+            @babel/preset-env：结合 browserslist 仅降级必要语法；
+            Polyfill 策略：
+                1) core-js + useBuiltIns: usage —— 自动按需引入全局垫片（会污染全局，做应用常用）；
+                2) @babel/plugin-transform-runtime + @babel/runtime —— 复用 helper，默认不注入全局 polyfill（做库更合适）。
+        Vite 场景：esbuild 负责大多语法与打包，@vitejs/plugin-react 用 Babel 处理 JSX、开发时刷新；需要精细降级时再交给 Babel。
+
+    3.跨平台：React 借助虚拟 DOM，带来了跨平台的能力，一套代码多端运行 
+        更准确：跨平台来自“协调器（Reconciler）与渲染器（Renderer）解耦”。同一套组件逻辑可接不同渲染器：
+            Web 用 react-dom，原生用 react-native，Canvas/WebGL 用第三方渲染器（react-three-fiber 等）。
+        实践：
+            逻辑与视图解耦（Hook/服务复用，UI 原语按平台适配）；
+            可用 react-native-web 在 Web 复用 RN 组件，但并非零改动；
+            公共代码抽到 packages/，平台层提供桥接。
+    
+    4.子类是没有自己的 this 对象的，它只能继承父类的 this 对象，然后对其进行加工
+        而 super() 就是将父类中的 this 对象继承给子类的，没有 super() 子类就得不到 this 对象
+        如果先调用 this，再初始化 super()，同样是禁止的行为
+        说明：派生类的 this 创建与初始化由父类构造负责，规范要求在构造函数中必须先调用 super() 才能使用 this，否则抛 ReferenceError。
+        要点：
+            super(props) 之后才能访问 this.state/this.props；
+            类字段与箭头函数的初始化发生在 super() 之后，箭头函数会绑定当前实例 this；
+            访问父类方法可用 super.method()，注意 super 指向原型而非实例。
+
+    5.React并不像vue2中调用Object.defineProperty数据响应式或者Vue3调用Proxy监听数据的变化
+        必须通过setState方法来告知react组件state已经发生了改变
+        区别：React 不追踪“读依赖”，更新依赖显式调用 setState/useState；Vue 通过响应式系统追踪依赖，直接改值即可触发更新。
+        实践：
+            遵守不可变数据（返回新引用），不要直接修改 state/props 内部；
+            需要基于旧值计算时用函数式更新：setState(s => ...) 或 setCount(c => c + 1)；
+            需要“更新完成后”的副作用，类组件用 setState 第二参回调/生命周期，函数组件用 useEffect。
+    
+    6.哪些有回调函数
+        类组件：
+            setState(updater, callback) —— callback 在变更提交到 DOM 后执行；
+            forceUpdate(callback)；回调 ref：ref={node => {...}}；
+            生命周期方法属于 React 在特定时机调用（如 componentDidMount/Update/Unmount）。
+        函数组件/Hooks：
+            useEffect/useLayoutEffect/useInsertionEffect —— 传入的 effect 是回调，返回清理回调；
+            useState 无“完成回调”，但支持函数式更新；useReducer 支持懒初始化回调；
+            useImperativeHandle(ref, create) 暴露实例；useMemo/useCallback 接收创建回调；
+            startTransition(() => {...}) 把回调中更新标记为“过渡”。
+
+    7.setState:
+        ● 在组件生命周期或React合成事件中，setState是异步
+        ● 在setTimeout或者原生dom事件中，setState是同步
+    
+    8.React 中 setState 的批量更新（Batching）机制
+        setState 是异步的
+        setState 不会立即更新 this.state
+        React 会将多个 setState 调用"批量处理"，在事件处理完成后统一更新
+        方案1：使用函数式 setState
+        方案2：使用 setState 的回调
+        方案3：现代 React (Hooks) 写法： setCount(prevCount => prevCount + 1);
+        什么时候会批量更新？
+            React 17 及之前
+            会批量：React 事件处理函数内（onClick、onChange 等）
+            不会批量：setTimeout、Promise、原生事件
+            React 18+
+            自动批量：所有更新都会自动批量处理（包括 setTimeout、Promise）
+            可以用 flushSync 强制同步更新
+
+    9.flushSync
+        flushSync（React 18）是从 react-dom 导出的一个 API，用来“强制立即提交”包裹回调里的更新，跳过自动批处理，使得 DOM 在当前同步流程内立刻更新，下一行代码读到的就是最新的 DOM/状态
+        注：不要当作“让 setState 变同步”的常规手段；多数场景用函数式更新或在 effect 中读取更合适。
+    
+    10.hash和history的区别
+    
+    11.深拷贝和浅拷贝
+
+    12.介绍forEach和map并且说出区别
+
+    13..介绍一下正向代理和反向代理
+
+    14.介绍一下代理模式
+
+    15.大模型返回的内容如果是html结构的，怎么处理
+
+    16.性能优化问题如何定位
+
+    17.介绍一下发布订阅模式
+
+    18.vuex和pinia的区别
+
+    19.tcp，udp的区别
+
+    20.进程和线程的区别
+
+    21.promise api
+
+    22.webpack和vite的区别
+
+    21.三栏布局
+
+    22.手写new
+    
+    23.手写 promise
+
+    24.echart怎么用的
+
+    25.Electron
+
+    26.CSS选择器
+
+    27.react调度机制
+
+    28.useEffect执行机制
+
+    29.useEffect依赖性变化是怎么样的
+
+    30.react响应式的数据流流动过程
+
+    31.浏览器原生监控视窗的方法，三套
+
+    32.bind,apply.call可以改变 this的指向吗(
+
+    33.forEach.map可以用break跳出循环吗?用什么方法可以跳出?
+
+    34..push，pop等会改变原数组吗?
+
+    35.优化首屏加载时间的其他方案
+
+    36.es6 的新特性
+
+    37.讲-下differ算法
+
+    38..SSE
+
+    39.如何使用manus部署网站的
+
+    40.doker
+
+    41.函数组件相对于类组件有什么好处?
+
+    42.canvas如何绘制到canvas
+
+    43.实现瀑布流
+
+    44.本地存储 页面刷新实效问题
+
+    45.存储还有那些 sesectionstore和local的区别
+
+    46.页面有一个接口，需要定时扫描，直到这个接口请求结束，应该怎么实现
+
+    47.dify和LangChain有
+
+    48.fetch底层
+
+    49.intersectionobserver详细解释一下
+
+    50.如何使用three.is实现一个立方体
+
+    51.什么情况下要跨域，怎么做
+
+    52.样式上的偏差怎么反馈给 AI
+
+    53.proxy和defineproperty
+
+    54.怎么拦截页面的推出
+
+    55.TS类型操作
+
+    56.打包部署流程
+    怎么打包
+    优化打包体积
+
+    57.promise和 async awaitx别
+
+    58.媒体查询
+
+8.14：
+    1.React基于浏览器的事件机制自身实现了一套事件机制，包括事件注册、事件的合成、事件冒泡、事件派发等，在React中这套事件机制被称之为合成事件
+
+    2.事件代理函数
+
+    3.组件的创建主要分成了三种方式：
+        ● 函数式创建
+        ● 通过 React.createClass 方法创建
+        ● 继承 React.Component 创建
+    4.在React Hooks出来之前，函数式组件可以视为无状态组件，只负责根据传入的props来展示视图，不涉及对state状态的操作
+        有状态的组件也就是组件内部存在维护的数据，在类创建的方式中通过this.state进行访问
+        当调用this.setState修改组件的状态时，组件会再次会调用render()方法进行重新渲染
+    5.函数式创建的组件的方式，最终会通过babel转化成React.createClass这种形式
+    6.MVC模式
+    7.
