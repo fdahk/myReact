@@ -740,108 +740,203 @@ React数据与视图、生命周期等 ：
         注：不要当作“让 setState 变同步”的常规手段；多数场景用函数式更新或在 effect 中读取更合适。
     
     10.hash和history的区别
+    - hash模式：URL中带有一个#符号，通过监听window.onhashchange事件实现路由切换。
+    - history模式：利用HTML5的history.pushState和history.replaceState方法，URL更简洁，但需要服务器支持。
     
     11.深拷贝和浅拷贝
+    - 浅拷贝：只复制对象的引用，新旧对象共享同一块内存。
+    - 深拷贝：完全复制对象及其嵌套对象，新旧对象互不影响。
 
     12.介绍forEach和map并且说出区别
+    - forEach：遍历数组，无返回值，适合执行副作用操作。
+    - map：遍历数组，返回新数组，适合数据转换。
 
-    13..介绍一下正向代理和反向代理
+    13.介绍一下正向代理和反向代理
+    - 正向代理：客户端通过代理服务器访问目标服务器，隐藏客户端身份。
+    - 反向代理：客户端通过代理服务器访问目标服务器，隐藏服务器身份。
 
     14.介绍一下代理模式
+    - 代理模式：为对象提供一个代理，控制对原对象的访问，常用于缓存、权限控制等。
 
     15.大模型返回的内容如果是html结构的，怎么处理
+    - 使用DOMParser解析HTML字符串为DOM对象。
+    - 使用innerHTML或React的dangerouslySetInnerHTML渲染。
 
     16.性能优化问题如何定位
+    - 使用Chrome DevTools的Performance面板分析性能瓶颈。
+    - 使用Lighthouse生成优化建议。
 
     17.介绍一下发布订阅模式
+    - 发布订阅模式：对象间一对多的依赖关系，通过事件中心解耦。
 
     18.vuex和pinia的区别
+    - Vuex：基于Flux架构，适合大型项目。
+    - Pinia：轻量级，支持TypeScript，更灵活。
 
     19.tcp，udp的区别
+    - TCP：面向连接，可靠传输，适合文件传输。
+    - UDP：无连接，高效传输，适合视频流。
 
     20.进程和线程的区别
+    - 进程：独立内存空间，资源分配单位。
+    - 线程：共享进程资源，CPU调度单位。
 
     21.promise api
+    - Promise.resolve：返回一个已解决的Promise。
+    - Promise.reject：返回一个已拒绝的Promise。
 
     22.webpack和vite的区别
+    - Webpack：基于打包，适合复杂项目。
+    - Vite：基于原生ES模块，开发体验更快。
 
     21.三栏布局
+    - 使用Flexbox或Grid布局实现。
+    - 中间栏自适应，两侧固定宽度。
 
     22.手写new
+    - 创建一个空对象，绑定原型。
+    - 执行构造函数，返回对象。
     
     23.手写 promise
+    - 实现then、catch方法。
+    - 处理异步状态变更。
 
     24.echart怎么用的
+    - 引入ECharts库。
+    - 初始化图表实例，配置数据。
 
     25.Electron
+    - 使用HTML、CSS、JS构建跨平台桌面应用。
+    - 主进程和渲染进程通信。
 
     26.CSS选择器
+    - 类选择器：.class。
+    - ID选择器：#id。
 
     27.react调度机制
+    - Fiber架构实现任务分片。
+    - 优先级调度确保流畅性。
 
     28.useEffect执行机制
+    - 组件挂载和更新时执行。
+    - 依赖项变化触发重新执行。
 
     29.useEffect依赖性变化是怎么样的
+    - 依赖项数组为空时只执行一次。
+    - 依赖项变化时重新执行。
 
     30.react响应式的数据流流动过程
+    - 单向数据流：父组件→子组件。
+    - 状态提升共享数据。
 
     31.浏览器原生监控视窗的方法，三套
+    - window.innerWidth/innerHeight。
+    - ResizeObserver API。
 
-    32.bind,apply.call可以改变 this的指向吗(
+    32.bind,apply.call可以改变 this的指向吗
+    - 可以，bind返回新函数，apply/call立即执行。
 
     33.forEach.map可以用break跳出循环吗?用什么方法可以跳出?
+    - 不能，使用some或every替代。
 
-    34..push，pop等会改变原数组吗?
+    34.push，pop等会改变原数组吗?
+    - 会，这些方法直接修改原数组。
 
     35.优化首屏加载时间的其他方案
+    - 代码分割。
+    - 预加载关键资源。
 
     36.es6 的新特性
+    - let/const。
+    - 箭头函数。
 
     37.讲-下differ算法
+    - React的Diff算法优化DOM更新。
+    - 基于key的复用策略。
 
-    38..SSE
+    38.SSE
+    - 服务器推送事件，基于HTTP长连接。
+    - 适用于实时数据推送。
 
     39.如何使用manus部署网站的
+    - 配置CI/CD流水线。
+    - 自动化构建和发布。
 
     40.doker
+    - 容器化技术，打包应用和依赖。
+    - 跨平台运行。
 
     41.函数组件相对于类组件有什么好处?
+    - 代码更简洁。
+    - 支持Hooks。
 
     42.canvas如何绘制到canvas
+    - 使用getContext('2d')获取绘图上下文。
+    - 调用绘图API如fillRect。
 
     43.实现瀑布流
+    - 使用CSS Grid或Flexbox。
+    - 动态计算元素位置。
 
     44.本地存储 页面刷新实效问题
+    - 使用localStorage持久化数据。
+    - 监听beforeunload事件。
 
     45.存储还有那些 sesectionstore和local的区别
+    - sessionStorage：会话级存储。
+    - localStorage：持久化存储。
 
     46.页面有一个接口，需要定时扫描，直到这个接口请求结束，应该怎么实现
+    - 使用setInterval轮询接口。
+    - 请求成功后清除定时器。
 
     47.dify和LangChain有
+    - Dify：低代码AI平台。
+    - LangChain：AI应用开发框架。
 
     48.fetch底层
+    - 基于Promise的HTTP请求API。
+    - 支持流式响应。
 
     49.intersectionobserver详细解释一下
+    - 监听元素与视窗交叉状态。
+    - 用于懒加载和曝光统计。
 
     50.如何使用three.is实现一个立方体
+    - 创建场景、相机、渲染器。
+    - 添加立方体几何体和材质。
 
     51.什么情况下要跨域，怎么做
+    - 不同源请求需跨域。
+    - 使用CORS或代理解决。
 
     52.样式上的偏差怎么反馈给 AI
+    - 提供截图或DOM结构。
+    - 描述具体偏差现象。
 
     53.proxy和defineproperty
+    - Proxy：拦截对象操作。
+    - defineProperty：定义属性特性。
 
     54.怎么拦截页面的推出
+    - 监听beforeunload事件。
+    - 返回提示信息。
 
     55.TS类型操作
+    - 类型别名和接口。
+    - 泛型和条件类型。
 
     56.打包部署流程
-    怎么打包
-    优化打包体积
+    - 使用Webpack或Vite打包。
+    - 优化：代码分割、Tree Shaking。
 
-    57.promise和 async awaitx别
+    57.promise和 async await区别
+    - Promise：链式调用。
+    - async/await：同步写法。
 
     58.媒体查询
+    - 响应式设计工具。
+    - 根据设备特性应用样式。
 
 8.14：
     1.React基于浏览器的事件机制自身实现了一套事件机制，包括事件注册、事件的合成、事件冒泡、事件派发等，在React中这套事件机制被称之为合成事件
@@ -858,3 +953,67 @@ React数据与视图、生命周期等 ：
     5.函数式创建的组件的方式，最终会通过babel转化成React.createClass这种形式
     6.MVC模式
     7.
+
+8.16：
+    1.vue 和 react 创建一个项目的对比
+
+
+    2.react 的 key
+        跟Vue一样，React 也存在 Diff算法，而元素key属性的作用是用于判断元素是新创建的还是被移动的元素，从而减少不必要的元素渲染
+        使用 index 作为 key值，对性能没有优化
+
+    3.React refs
+        和vue中的 ref 似乎不同
+
+    4.React高阶组件
+
+    5.函数式（无状态）组件上使用 ref 属性，因为它没有实例
+
+    6.React中组件间过渡动画
+        在react中实现过渡动画效果会有很多种选择，如react-transition-group，react-motion，Animated，以及原生的CSS都能完成切换动画
+        react-transition-group解决方案： 其为元素添加enter，enter-active，exit，exit-active这一系列勾子
+        ● CSSTransition：在前端开发中，结合 CSS 来完成过渡动画效果
+        ● SwitchTransition：两个组件显示和隐藏切换时，使用该组件
+        ● TransitionGroup：将多个动画组件包裹在其中，一般用于列表中元素的动画
+
+    7.React Router 
+        react-router等前端路由的原理大致相同，可以实现无刷新的条件下切换显示不同的页面
+        路由的本质就是页面的URL发生改变时，页面的显示结果可以根据URL的变化而变化，但是页面不会刷新因此，可以通过前端路由可以实现单页(SPA)应用
+        react-router主要分成了几个不同的包：
+            ●  react-router: 实现了路由的核心功能 
+            ●  react-router-dom： 基于 react-router，加入了在浏览器运行环境下的一些功能 
+            ●  react-router-native：基于 react-router，加入了 react-native 运行环境下的一些功能 
+            ●  react-router-config: 用于配置静态路由的工具库 
+        
+        react-router-dom的常用API，主要是提供了一些组件：
+            ● BrowserRouter、HashRouter
+            ● Route
+            ● Link、NavLink
+            ● switch
+            ● redirect
+
+        Link组件，最终会被渲染成a元素，其中属性to代替a标题的href属性
+        NavLink是在Link基础之上增加了一些样式属性，组件被选中时，发生样式变化，可以设置NavLink的属性：
+            ● activeStyle：活跃时（匹配时）的样式
+            ● activeClassName：活跃时添加的class
+
+        通过Route作为顶层组件包裹其他组件后,页面组件就可以接收到一些路由相关的东西，比如props.history
+            props中接收到的history对象具有一些方便的方法，如goBack，goForward,push
+
+        swich组件的作用适用于当匹配到第一个组件的时候，后面的组件就不应该继续匹配
+
+        除了一些路由相关的组件之外，react-router还提供一些hooks，如下：
+            ● useHistory --组件内部直接访问history，无须通过props获取
+            ● useParams
+            ● useLocation --useLocation 会返回当前 URL的 location对象
+        
+    8.React中的immutable ： 性能优化
+
+    9.React render方法的原理？在什么时候会被触发？
+        在类组件中，指的是render方法
+        在函数组件中，指的是函数组件本身
+
+    10.如何提高组件的渲染效率的？在React中如何避免不必要的render？
+
+8.17：
+    
