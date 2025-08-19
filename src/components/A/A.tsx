@@ -1,5 +1,5 @@
 import style from './index.module.scss'
-function Index() {
+function A() {
 
     return (
         <div className={style.container}>
@@ -10,4 +10,4 @@ function Index() {
     )
 }
 
-export default Index;
+export default A;
