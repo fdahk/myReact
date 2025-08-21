@@ -1029,3 +1029,6 @@ React数据与视图、生命周期等 ：
     2.注意，事件需要的是一个可执行函数，
         <button onClick={throttle(handleClick)}>点击</button> 错误，事件得到是函数的返回值
         <button onClick={() => throttle(handleClick)}>点击</button> 正确
+
+8.21：
+    1.const 和 let 声明也会被提升，但存在"暂时性死区"

@@ -5,7 +5,7 @@ import Index from './components/waterfall'
 function App() {
 
   return (
-      <Index items={[]} />
+      <Index/>
   )
 }
 

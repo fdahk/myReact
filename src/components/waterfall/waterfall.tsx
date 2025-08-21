@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import style from './waterfall.module.scss';
 
-// 瀑布流项目接口
 interface WaterfallItem {
   id: number;
   title: string;
@@ -17,27 +16,16 @@ interface WaterfallProps {
   gap?: number;
 }
 
-// 生成模拟数据
-const generateMockData = (count: number): WaterfallItem[] => {
-  return Array.from({ length: count }, (_, index) => ({
-    id: index + 1,
-    title: `Item ${index + 1}`,
-    image: `https://picsum.photos/300/${200 + Math.floor(Math.random() * 200)}?random=${index}`,
-    height: 200 + Math.floor(Math.random() * 200),
-    content: `这是第${index + 1}个项目的内容描述...`
-  }));
-};
-
 const Waterfall: React.FC<WaterfallProps> = ({ 
-  items = generateMockData(20), 
+  items = [], 
   columns = 3, 
   gap = 16 
 }) => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [currentColumns, setCurrentColumns] = useState(columns);
-  const [columnHeights, setColumnHeights] = useState<number[]>(new Array(columns).fill(0));
-  const [itemPositions, setItemPositions] = useState<Array<{left: number, top: number}>>([]);
-  const [containerWidth, setContainerWidth] = useState(0);
+  const containerRef = useRef<HTMLDivElement>(null); // 容器引用
+  const [currentColumns, setCurrentColumns] = useState(columns); // 当前列数
+  const [columnHeights, setColumnHeights] = useState<number[]>(new Array(columns).fill(0)); // 列高度
+  const [itemPositions, setItemPositions] = useState<Array<{left: number, top: number}>>([]); // 元素位置
+  const [containerWidth, setContainerWidth] = useState(0); // 容器宽度
 
   // 响应式列数计算
   const getResponsiveColumns = useCallback((width: number) => {
@@ -99,10 +87,9 @@ const Waterfall: React.FC<WaterfallProps> = ({
 
   // 容器高度为最高列的高度
   const containerHeight = Math.max(...columnHeights);
-
+  
   return (
     <div className={style.container}>
-      <h2 className={style.title}>瀑布流布局演示</h2>
       <div 
         ref={containerRef}
         className={style.waterfall}
@@ -112,6 +99,7 @@ const Waterfall: React.FC<WaterfallProps> = ({
         }}
       >
         {items.map((item, index) => {
+
           const position = itemPositions[index];
           if (!position) return null;
 
