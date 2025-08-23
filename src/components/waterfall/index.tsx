@@ -13,5 +13,5 @@ return Array.from({ length: count }, (_, index) => ({
 
 export default function Index() {
 
-  return <Waterfall items={generateMockData(20)}/>;
+  return <Waterfall items={generateMockData(100)}/>;
 }

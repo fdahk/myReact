@@ -1032,3 +1032,15 @@ React数据与视图、生命周期等 ：
 
 8.21：
     1.const 和 let 声明也会被提升，但存在"暂时性死区"
+        暂时性死区（Temporal Dead Zone，TDZ）是ES6引入的一个重要概念，指的是变量已经被声明提升，但在实际声明语句之前无法访问的区域
+        适用对象：let、const、class声明的变量
+        访问结果：ReferenceError（不是undefined）
+        为什么要这样设计？
+        1. 保持作用域一致性
+        2. 避免变量泄露
+
+8.22：
+    1.easycom 默认规则
+        uni-app 默认启用 easycom 功能，会自动扫描以下路径的组件：
+        uni_modules/[插件名]/components/[组件名]/[组件名].vue
+        components/[组件名]/[组件名].vue

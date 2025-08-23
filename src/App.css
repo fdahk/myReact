@@ -1,4 +1,7 @@
 #root {
+  box-sizing: border-box;
   margin: 0 auto;
+  width: 100%;
+  scrollbar-width: none;
 }
 

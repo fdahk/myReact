@@ -1,5 +1,5 @@
-import style from './A.module.scss'
-function A() {
+import style from './animation.module.scss'
+function Animation() {
 
     return (
         <div className={style.container}>
@@ -10,4 +10,4 @@ function A() {
     )
 }
 
-export default A;
+export default Animation;

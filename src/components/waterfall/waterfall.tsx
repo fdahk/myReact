@@ -38,12 +38,11 @@ const Waterfall: React.FC<WaterfallProps> = ({
   // 计算布局
   const calculateLayout = useCallback(() => {
     if (!containerRef.current) return;
-    
-    const containerWidth = containerRef.current.offsetWidth;
-    const responsiveColumns = getResponsiveColumns(containerWidth);
-    const columnWidth = (containerWidth - gap * (responsiveColumns - 1)) / responsiveColumns;
-    const heights = new Array(responsiveColumns).fill(0);
-    const positions: Array<{left: number, top: number}> = [];
+    const containerWidth = containerRef.current.offsetWidth; // 容器宽度
+    const responsiveColumns = getResponsiveColumns(containerWidth); // 响应式列数
+    const columnWidth = (containerWidth - gap * (responsiveColumns - 1)) / responsiveColumns; // 列宽度
+    const heights = new Array(responsiveColumns).fill(0); // 列高度
+    const positions: Array<{left: number, top: number}> = []; // 元素位置
 
     items.forEach((item) => {
       // 找到最短的列
@@ -67,7 +66,7 @@ const Waterfall: React.FC<WaterfallProps> = ({
 
   // 防抖的窗口大小变化处理
   useEffect(() => {
-    let timeoutId: number;
+    let timeoutId: number; // 防抖定时器
     
     const handleResize = () => {
       clearTimeout(timeoutId);
@@ -83,7 +82,7 @@ const Waterfall: React.FC<WaterfallProps> = ({
       window.removeEventListener('resize', handleResize);
       clearTimeout(timeoutId);
     };
-  }, [calculateLayout]);
+  }, [calculateLayout]); // 依赖项：计算布局函数
 
   // 容器高度为最高列的高度
   const containerHeight = Math.max(...columnHeights);
