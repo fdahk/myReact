@@ -188,4 +188,13 @@
         - event.key - 按键值
         - event.code - 按键代码
     
-    
+8.23：
+    1.JS中的类
+        属性定义：
+            listener = {}; // 直接在类中定义
+            static listener = {}; // 所有实例共享同一个对象
+            const listener = {}; // ❌ 语法错误！类中不能直接用const
+
+8.24
+    1.为什么返回 this 就能实现链式调用
+        const result = calc.add(5).multiply(2).subtract(3).getResult()
