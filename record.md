@@ -1044,3 +1044,6 @@ React数据与视图、生命周期等 ：
         uni-app 默认启用 easycom 功能，会自动扫描以下路径的组件：
         uni_modules/[插件名]/components/[组件名]/[组件名].vue
         components/[组件名]/[组件名].vue
+
+8.27：
+    1.grps、restful风格

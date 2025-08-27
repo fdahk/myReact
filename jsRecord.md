@@ -198,3 +198,241 @@
 8.24
     1.为什么返回 this 就能实现链式调用
         const result = calc.add(5).multiply(2).subtract(3).getResult()
+    
+8.26：
+    1.for...in 循环中的索引确实总是字符串类型
+        数组本质上是对象，对象的属性名总是字符串类型
+        推荐遍历方法：
+            // 遍历数组值
+            for (const item of array) { }
+
+            // 需要索引时
+            for (const [index, item] of array.entries()) { }
+
+            // 函数式编程
+            array.forEach((item, index) => { });
+
+            // 传统循环
+            for (let i = 0; i < array.length; i++) { }
+
+
+​    2.点击元素没有触发事件？
+        可能元素有重叠，实际点击元素被覆盖
+        需要的效果在父级，但是事件冒泡被拦截了，没有被父级获取
+
+​	 3.大小继承 
+
+    4.inline-block 和 white-space: nowrap 的组合在微信小程序中会强制撑开父容器
+
+
+    5. 子元素设置 opacity: 1 只是相对于父元素的透明度
+        最终效果 = 父透明度 × 子透明度 = 0.6 × 1 = 0.6
+
+    6. gap坑
+        间隔计算不对，看看是不是哪里有gap
+
+    7. :status="'进行中'" 在vue中这样写才正确，单个引号包裹的是变量
+
+8.27：
+    1.Array.prototype.entries() 是数组的一个内置方法，它返回一个新的数组迭代器对象，该对象包含数组中每个索引的键值对
+        迭代器是一次性的，遍历完后需要重新调用 entries() 获取新的迭代器
+    
+    2.迭代器（Iterator）是一种设计模式，它提供了一种统一的方式来遍历不同类型的数据结构。在 JS 中，迭代器是一个对象，它实现了迭代器协议。
+        迭代器协议
+        迭代器必须实现 next() 方法，该方法返回一个对象，包含两个属性：
+        value：当前迭代的值
+        done：布尔值，表示迭代是否完成
+
+        一次性使用：迭代器遍历完后就不能再使用了
+        状态保持：迭代器会保持当前的遍历状态
+        性能考虑：对于大量数据，迭代器比数组更节省内存
+    
+    3.可迭代对象（Iterable）
+        可迭代对象是实现了 Symbol.iterator 方法的对象。这个方法返回一个迭代器。
+
+    4.对内置可迭代对象
+        const arr = [1, 2, 3];
+        const iterator = arr[Symbol.iterator]();
+
+        Symbol.iterator 是什么？
+            Symbol.iterator 是一个内置的 Symbol，用来定义对象默认迭代器的特殊属性键
+            Symbol 是 ES6 引入的一种新的原始数据类型，用于创建唯一的标识符
+
+    5.生成器函数（Generator）
+        生成器函数是创建迭代器的更简便方式
+        function* numberGenerator() {
+            yield 1;
+            yield 2;
+            yield 3;
+        }
+        
+        yield 关键字用于暂停函数执行并返回一个值
+            每次调用 next() 方法时，函数会从上次 yield 的位置继续执行
+            yield 后面的表达式就是返回给调用者的值
+        实际应用场景
+            无限序列生成：
+            异步操作控制：
+            状态机实现
+        优势
+        内存效率：按需生成值，不需要一次性创建所有数据
+        惰性求值：只在需要时才计算下一个值
+        状态保持：自动保存函数执行状态
+        简洁语法：比手动实现迭代器更简单
+
+8.27：
+    1.instance of 
+        返回值：布尔值（true/false）
+        工作原理：
+            instanceof 检查构造函数的 prototype 属性是否出现在对象的原型链中
+            所以其只支持对象使用
+        注意：
+            const str1 = 'hello';              // 基本类型
+            const str2 = new String('hello');  // 包装对象
+            console.log(str1 instanceof String); // false
+            console.log(str2 instanceof String); // true
+
+        最佳实践
+        数组检测：优先使用 Array.isArray()
+        跨框架场景：使用 Object.prototype.toString.call()
+        错误处理：instanceof 是好选择
+        DOM元素：instanceof 很适用
+        自定义类：instanceof 是标准做法
+    
+    2.类型的通用检测方法：
+        通用检测（使用 Object.prototype.toString）
+  
+    3. null - 虽然 typeof 显示 "object"，但它不是对象
+        历史遗留问题，被称为"JavaScript 最著名的 bug"
+        正确的检测方式：使用严格相等 (===) 或 Object.prototype.toString.call()
+        现代解决方案：使用空值合并 (??) 和可选链 (?.) 操作符
+ 
+    2.JS的对象(null除外)在创建的时候就会与之关联另一个对象，这个对象就是我们所说的原型，每一个对象都会从原型"继承"属性
+
+    3.person.constructor === Person
+        // 传统构造函数
+        function Person(name) {
+            this.name = name;
+        }
+        const person = new Person('John');
+
+        // 当你定义一个函数时，JavaScript 自动做了这些事：
+        function Person(name) {
+            this.name = name;
+        }
+        // JavaScript 自动执行（概念上）：
+        // Person.prototype.constructor = Person;
+
+        // ES6 类语法： 类实际上就是构造函数的语法糖
+        class Animal {
+            constructor(name) {
+                this.name = name;
+            }
+        }
+        
+        person.constructor === Person 的原因：
+        constructor 属性存储在 Person.prototype 上
+        JavaScript 自动设置 Person.prototype.constructor = Person
+        实例通过原型链访问到这个属性
+        类就是构造函数：
+        ES6 的 class 本质上是构造函数的语法糖
+        typeof MyClass === 'function'
+        类和构造函数在功能上完全等价
+        // ❌ 传统构造函数写法
+        function Person(name, age) {
+            this.name = name;
+        }
+
+        Person.prototype.sayHello = function() {
+            return `Hello, I'm ${this.name}`;
+        };
+
+        // ✅ ES6 Class 写法（更简洁！）
+        class Person {
+            constructor(name, age) {
+                this.name = name;
+                this.age = age;
+            }
+            
+            sayHello() {
+                return `Hello, I'm ${this.name}`;
+            }
+        }
+
+    4.__proto__ 
+        绝大部分浏览器都支持这个非标准的方法访问原型，然而它并不存在于 Person.prototype 中，
+        实际上，它来自 Object.prototype ，与其说是一个属性，不如说是一个 getter/setter，当使用 obj.__proto__ 时，可以理解成返回了 Object.getPrototypeOf(obj)
+
+    5.JS 采用的是词法（静态）作用域，函数的作用域在函数定义的时候就决定了。
+        与词法作用域相对的是动态作用域，函数的作用域是在函数调用的时候才决定的
+
+    6.JS引擎并非一行一行地分析和执行程序，而是一段一段的。当执行一段代码的时候，会进行一个"准备工作"
+        可执行代码(executable code)的类型有哪些：
+            三种，全局代码、函数代码、eval代码。
+            举例，当执行到一个函数的时，就会进行准备工作，这里的"准备工作"，让我们用更专业点的说法，就叫做"执行上下文(execution context)
+        
+        什么是执行上下文（Execution Context）？
+            执行上下文是代码执行时的环境，包含了代码执行所需的所有信息
+            每个执行上下文都包含三个重要组成部分：
+                1. 变量对象（Variable Object，VO）：存储变量、函数声明、参数等
+                2. 作用域链（Scope Chain）：用于变量查找的链式结构
+                3. this指向：确定this的值
+        
+        如何管理创建的执行上下文呢？
+            JS引擎创建了执行上下文栈（Execution context stack，ECS）来管理执行上下文
+        
+        什么是执行上下文栈？
+            执行上下文栈是一个LIFO（后进先出）的栈结构，用来管理执行上下文的创建和销毁
+            
+            执行流程：
+            1. JavaScript开始执行时，首先创建全局执行上下文，压入栈底
+            2. 每当调用一个函数时，创建该函数的执行上下文，压入栈顶
+            3. 函数执行完毕后，其执行上下文从栈顶弹出
+            4. 程序结束时，全局执行上下文最后弹出
+  
+        
+        执行上下文的创建过程：
+            分为两个阶段：
+            1. 创建阶段（Creation Phase）：
+                - 创建变量对象（VO）
+                - 建立作用域链
+                - 确定this指向
+                - 进行变量提升和函数提升
+            2. 执行阶段（Execution Phase）：
+                - 变量赋值
+                - 函数引用
+                - 执行代码
+        
+        7.变量对象（Variable Object）详解：
+            在函数执行上下文中，变量对象也称为活动对象（Activation Object，AO）
+            
+            创建过程：
+            1. 函数的所有形参（如果是函数上下文）
+                - 由名称和对应值组成一个变量对象的属性被创建
+                - 没有实参，属性值设为undefined
+            
+            2. 函数声明
+                - 由名称和对应值（函数对象）组成一个变量对象的属性被创建
+                - 如果变量对象已经存在相同名称的属性，则完全替换这个属性
+            
+            3. 变量声明
+                - 由名称和对应值（undefined）组成一个变量对象的属性被创建
+                - 如果变量名称跟已经声明的形式参数或函数相同，则变量声明不会干扰已经存在的这类属性
+        
+        8.作用域链（Scope Chain）详解：
+            作用域链是一个对象列表，用于变量查找
+            查找过程：
+            1. 在当前执行上下文的变量对象中查找
+            2. 如果没找到，就在父级执行上下文的变量对象中查找
+            3. 一直找到全局执行上下文的变量对象
+            4. 如果还没找到，就报ReferenceError
+            
+        9. this指向的确定：
+            this的值在执行上下文创建阶段就确定了，不是在执行阶段
+            确定规则：
+            1. 全局执行上下文中，this指向全局对象（浏览器中是window）
+            2. 函数执行上下文中：
+                - 如果函数被一个引用对象调用，this指向那个对象
+                - 否则，this指向全局对象或undefined（严格模式）
+                - 箭头函数的this继承自外层执行上下文
+
+            ```
