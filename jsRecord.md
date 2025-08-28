@@ -435,4 +435,86 @@
                 - 否则，this指向全局对象或undefined（严格模式）
                 - 箭头函数的this继承自外层执行上下文
 
-            ```
+8.28：
+    1.ECMAScript 的类型分为语言类型和规范类型
+        规范类型相当于 meta-values，用来用算法描述 ECMAScript 语言结构和语言类型的。规范类型包括：
+        Reference, List, Completion, Property Descriptor, Property Identifier, Lexical Environment, 和 Environment Record
+
+    2. 作用域 vs this 指向
+        作用域（Scope）：决定变量的访问范围
+        this 指向：决定函数执行时 this 的值
+        它们是完全独立的机制！
+        this 的指向只看调用方式，不看变量所在作用域
+
+    3.bind/call/apply 改变 this 指向
+        bind/call/apply 三个方法的区别。
+            一句话总结，都用来改变相关函数 this 指向，但 call/apply 是直接进行相关函数调用；bind 不会执行相关函数，而是返回一个新的函数，新的函数已经自动绑定了新的 this 指向，开发者手动调用即可。再具体的 call/apply 之间的区别主要体现在参数设定上
+        call、apply、bind、new 对 this 绑定的情况称为显式绑定；根据调用关系确定的 this 指向称为隐式绑定
+    
+    4.new 操作符调用构造函数，具体做了什么？
+        ● 创建一个新的对象；
+        ● 将构造函数的 this 指向这个新对象；
+        ● 为这个对象添加属性、方法等；
+        ● 最终返回新对象
+        相当于：
+        var obj = {}                    // 1. 创建空对象
+        obj.__proto__ = Foo.prototype   // 2. 设置原型链
+        Foo.call(obj)                   // 3. 执行构造函数
+    
+    5.如果构造函数中显式返回一个值，且返回的是一个对象，那么 this 就指向这个返回的对象；如果返回的不是一个对象，那么 this 仍然指向实例
+
+    6.变量提升和函数提升会提升到哪
+
+    7.箭头函数没有自己的 this，它会继承外层作用域的 this
+        fn: function() {           // ← 这是箭头函数的外层函数（定义位置）
+            setTimeout(() => {     // ← 箭头函数定义在 fn 函数内部
+                console.log(this)  // ← 继承定义时外层的 this
+            })                     // ← setTimeout 只是调用者，不是定义者
+        
+    8.new 绑定修改了 bind 绑定中的 this，因此 new 绑定的优先级比显式 bind 绑定更高
+
+    9.箭头函数的绑定无法被修改
+
+    10.const 声明的变量不会挂载到 window 全局对象当中。因此 this 指向 window 时，找不到 var a 变量
+
+    11.理论上： 闭包 = 函数 + 函数能够访问的自由变量
+        所以，从技术的角度讲，所有的JavaScript函数都是闭包
+
+    12.从实践角度：以下函数才算是闭包：
+        a. 即使创建它的上下文已经销毁，它仍然存在（比如，内部函数从父函数中返回）
+        b. 在代码中引用了自由变量
+        例如：fContext = {
+            AO:{}
+            Scope: [AO, checkscopeContext.AO, globalContext.VO],
+        }
+        函数的执行上下文会维护一个作用域链，这就是闭包，其在其父函数的执行阶段确认了作用域链
+
+    13.什么是执行上下文：
+        globalContext = {
+            VO: {
+                scope: "global scope",
+                checkscope: function checkscope(){...},
+                foo: undefined
+            },
+            Scope: [globalContext.VO],
+            this: window/global
+        }
+
+        执行上下文创建阶段 =》 执行阶段 =》 执行完毕，执行上下文从栈中弹出
+
+    13.代码运行的第一个阶段：程序解析阶段（Parse Time）
+        // JavaScript引擎解析全局代码时：
+        // - 发现 checkscope 函数声明
+        // - 创建 checkscope 函数对象
+        // - checkscope.[[Scope]] = [GO] （全局对象）
+
+        // 当解析到 checkscope 函数体时：
+        // - 发现内部函数 f 的声明
+        // - 但此时还不会创建 f 的函数对象
+        // - 只是记录 f 的存在
+
+    14.赋值和函数的参数传递是对象时，是拷贝了一份引用副本
+
+    15.对于undef和null， isNull()的返回值都是true
+
+    16.
