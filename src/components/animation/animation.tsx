@@ -1,18 +1,26 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react'
 import style from './animation.module.scss'
 
-// 烟花形状常量 - 定义不同的烟花绽放形状
+// 性能配置
+const PERFORMANCE_CONFIG = {
+  MAX_FIREWORKS: 20, // 最大同时存在的烟花数
+  MAX_PARTICLES_PER_FIREWORK: 30, // 每个烟花的最大粒子数
+  ANIMATION_THROTTLE: 16, // 动画节流间隔(ms)
+  PARTICLE_CLEANUP_THRESHOLD: 0.1, // 粒子清理阈值
+  USE_TRANSFORM: true, // 使用transform而不是left/top
+} as const
+
+// 烟花形状常量
 const FireworkShape = {
   HEART: 'heart',
-  CIRCLE: 'circle', 
-  STAR: 'star',
   FLOWER: 'flower'
 } as const //as const 表示常量: 阻止类型推断
 
-// 烟花形状类型
+// 烟花形状模型
+// 使用联合类型获取的也是联合类型
 type FireworkShape = typeof FireworkShape[keyof typeof FireworkShape]
 
-// 烟花粒子接口 - 每个烟花粒子的属性
+// 烟花粒子模型
 interface Particle {
   id: number;
   x: number;
@@ -25,7 +33,16 @@ interface Particle {
   size: number;
 }
 
-// 烟花实例接口 - 定义整个烟花的属性
+// 性能质量等级
+const QUALITY_LEVELS = {
+  LOW: { particles: 20, fireworks:  10},
+  MEDIUM: { particles: 30, fireworks: 20 },
+  HIGH: { particles: 50, fireworks: 30 }
+} as const
+
+type QualityLevel = keyof typeof QUALITY_LEVELS
+
+// 烟花实例模型
 interface Firework {
   id: number;
   x: number;
@@ -42,10 +59,13 @@ interface Firework {
 function Animation() {
   const [fireworks, setFireworks] = useState<Firework[]>([]) // 存储所有烟花实例
   const [selectedShape, setSelectedShape] = useState<FireworkShape>(FireworkShape.HEART) // 当前选中的形状
+  const [qualityLevel, setQualityLevel] = useState<QualityLevel>('MEDIUM') // 性能质量等级
   
   // DOM引用，避免重复查找
   const containerRef = useRef<HTMLDivElement>(null) // 烟花容器引用
   const animationIdRef = useRef<number | undefined>(undefined) // 动画ID引用
+  const lastAnimationTime = useRef<number>(0) // 上次动画时间，用于节流
+  const particlePool = useRef<Particle[]>([]) // 粒子对象池，复用对象减少GC
   
   // 颜色配置 - 预定义的烟花颜色数组（使用useMemo优化性能）
   const colors = useMemo(() => [
@@ -60,7 +80,31 @@ function Animation() {
   ], [])
 
   /**
-   * 使用数学函数生成不同的粒子分布
+   * 从对象池获取或创建粒子对象，减少内存分配
+   */
+  const getParticleFromPool = useCallback((): Particle => {
+    const pooled = particlePool.current.pop()
+    if (pooled) {
+      return pooled
+    }
+    // 如果池中没有，创建新对象
+    return {
+      id: 0, x: 0, y: 0, vx: 0, vy: 0, 
+      life: 0, maxLife: 0, color: '', size: 0
+    }
+  }, [])
+
+  /**
+   * 将粒子对象返回池中复用
+   */
+  const returnParticleToPool = useCallback((particle: Particle) => {
+    if (particlePool.current.length < 200) { // 限制池大小
+      particlePool.current.push(particle)
+    }
+  }, [])
+
+  /**
+   * 使用数学函数生成不同的粒子分布（使用对象池）
    * @param shape 烟花形状
    * @param centerX 中心X坐标
    * @param centerY 中心Y坐标
@@ -76,96 +120,57 @@ function Animation() {
     const particles: Particle[] = []
     let particleCount = 0
 
+    // 根据性能等级调整粒子数量
+    const maxParticles = QUALITY_LEVELS[qualityLevel].particles
+    
     switch (shape) {
       case FireworkShape.HEART:
         // 心形数学公式: x = 16sin³(t), y = 13cos(t) - 5cos(2t) - 2cos(3t) - cos(4t)
-        particleCount = 50
+        particleCount = Math.min(50, maxParticles)
         for (let i = 0; i < particleCount; i++) {
           const t = (i / particleCount) * Math.PI * 2
           const heartX = 16 * Math.pow(Math.sin(t), 3)
           const heartY = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t))
           
-          particles.push({
-            id: i, // 粒子ID
-            x: centerX, // 中心X坐标
-            y: centerY, // 中心Y坐标
-            vx: heartX * 0.3, // 控制扩散速度
-            vy: heartY * 0.3,
-            life: 2, // 生命周期
-            maxLife: 2, // 最大生命周期
-            color: color, // 颜色
-            size: Math.random() * 3 + 2 // 大小
-          })
-        }
-        break
-
-      case FireworkShape.CIRCLE:
-        // 圆形分布 - 使用极坐标系统
-        particleCount = 40
-        for (let i = 0; i < particleCount; i++) {
-          const angle = (i / particleCount) * Math.PI * 2
-          const radius = 100 + Math.random() * 50
+          const particle = getParticleFromPool()
+          particle.id = i
+          particle.x = centerX
+          particle.y = centerY
+          particle.vx = heartX * 0.3
+          particle.vy = heartY * 0.3
+          particle.life = 2
+          particle.maxLife = 2
+          particle.color = color
+          particle.size = Math.random() * 3 + 2
           
-          particles.push({
-            id: i,
-            x: centerX,
-            y: centerY,
-            vx: Math.cos(angle) * radius * 0.1,
-            vy: Math.sin(angle) * radius * 0.1,
-            life: 1,
-            maxLife: 1,
-            color: color,
-            size: Math.random() * 4 + 2
-          })
+          particles.push(particle)
         }
         break
-
-      case FireworkShape.STAR:
-        // 五角星形状 - 使用正五角星的数学公式
-        particleCount = 35
-        for (let i = 0; i < particleCount; i++) {
-          const angle = (i / particleCount) * Math.PI * 2
-          // 五角星有内外两个半径，创造尖角效果
-          const radius = (i % 7 === 0) ? 120 : 60
-          
-          particles.push({
-            id: i,
-            x: centerX,
-            y: centerY,
-            vx: Math.cos(angle) * radius * 0.1,
-            vy: Math.sin(angle) * radius * 0.1,
-            life: 1,
-            maxLife: 1,
-            color: color,
-            size: Math.random() * 3 + 2
-          })
-        }
-        break
-
       case FireworkShape.FLOWER:
         // 花朵形状 - 使用玫瑰曲线公式
-        particleCount = 60
+        particleCount = Math.min(60, maxParticles)
         for (let i = 0; i < particleCount; i++) {
           const t = (i / particleCount) * Math.PI * 4
           const r = 80 * Math.sin(6 * t) // 玫瑰曲线，6个花瓣
           
-          particles.push({
-            id: i,
-            x: centerX,
-            y: centerY,
-            vx: r * Math.cos(t) * 0.1,
-            vy: r * Math.sin(t) * 0.1,
-            life: 1,
-            maxLife: 1,
-            color: color,
-            size: Math.random() * 3 + 2
-          })
+          const particle = getParticleFromPool()
+          particle.id = i
+          particle.x = centerX
+          particle.y = centerY
+          particle.vx = r * Math.cos(t) * 0.1
+          particle.vy = r * Math.sin(t) * 0.1
+          particle.life = 1
+          particle.maxLife = 1
+          particle.color = color
+          particle.size = Math.random() * 3 + 2
+          
+          particles.push(particle)
         }
         break
     }
 
     return particles
-  }, [])
+  }, [qualityLevel, getParticleFromPool]) // 使用对象池，减少内存分配
 
   /**
    * 处理鼠标点击事件 - 创建新的烟花
@@ -197,14 +202,29 @@ function Animation() {
       color: randomColor
     }
 
-    // 更新烟花数组，使用函数式更新避免状态竞争
-    setFireworks(prev => [...prev, newFirework])
-  }, [selectedShape, colors])
+    // 更新烟花数组，限制最大数量以优化性能
+    setFireworks(prev => {
+      const maxFireworks = QUALITY_LEVELS[qualityLevel].fireworks
+      const newFireworks = [...prev, newFirework]
+      // 如果超过最大数量，移除最老的烟花
+      return newFireworks.length > maxFireworks 
+        ? newFireworks.slice(-maxFireworks)
+        : newFireworks
+    })
+  }, [selectedShape, colors, qualityLevel])
 
   /**
    * 动画循环函数 - 使用requestAnimationFrame实现流畅动画，负责更新所有烟花和粒子的状态
+   * 添加节流机制以优化性能
    */
-  const animate = useCallback(() => {
+  const animate = useCallback((currentTime: number = performance.now()) => {
+    // 节流：限制动画更新频率
+    if (currentTime - lastAnimationTime.current < PERFORMANCE_CONFIG.ANIMATION_THROTTLE) {
+      animationIdRef.current = requestAnimationFrame(animate)
+      return
+    }
+    lastAnimationTime.current = currentTime
+    
     setFireworks(prevFireworks => {
       return prevFireworks.map(firework => {
         if (!firework.exploded) {
@@ -231,18 +251,26 @@ function Animation() {
           
           return { ...firework, y: newY }
         } else {
-          // 粒子扩散和衰减阶段
+          // 粒子扩散和衰减阶段 - 优化：减少对象创建
           const updatedParticles = firework.particles
-            .map(particle => ({
-              ...particle,
-              x: particle.x + particle.vx, // 粒子x轴位置
-              y: particle.y + particle.vy, // 粒子y轴位置
-              vy: particle.vy + 0.1, // 重力
-              vx: particle.vx * 0.98, // 空气阻力
-              life: particle.life - 0.02, // 生命周期衰减
-              size: particle.size * 0.99 // 尺寸缩小
-            }))
-            .filter(particle => particle.life > 0) // 移除生命周期结束的粒子
+            .map(particle => {
+              // 直接修改属性，避免创建新对象
+              particle.x += particle.vx
+              particle.y += particle.vy
+              particle.vy += 0.1 // 重力
+              particle.vx *= 0.98 // 空气阻力
+              particle.life -= 0.02 // 生命周期衰减
+              particle.size *= 0.99 // 尺寸缩小
+              return particle
+            })
+            .filter(particle => {
+              if (particle.life <= PERFORMANCE_CONFIG.PARTICLE_CLEANUP_THRESHOLD) {
+                // 将死亡粒子返回对象池
+                returnParticleToPool(particle)
+                return false
+              }
+              return true
+            })
 
           return {
             ...firework,
@@ -257,7 +285,7 @@ function Animation() {
 
     // 继续动画循环
     animationIdRef.current = requestAnimationFrame(animate)
-  }, [generateShapeParticles])
+  }, [generateShapeParticles, returnParticleToPool])
 
   /**
    * 使用useEffect管理动画生命周期
@@ -281,13 +309,15 @@ function Animation() {
   }, [fireworks.length, animate])
 
   /**
-   * 组件卸载时的清理工作
+   * 组件卸载时的清理工作（添加内存清理）
    */
   useEffect(() => {
     return () => {
       if (animationIdRef.current) {
         cancelAnimationFrame(animationIdRef.current)
       }
+      // 清空对象池释放内存
+      particlePool.current = []
     }
   }, [])
 
@@ -302,13 +332,12 @@ function Animation() {
         {/* 渲染所有烟花 */}
         {fireworks.map(firework => (
           <div key={firework.id}>
-            {/* 未爆炸的烟花火箭 */}
+            {/* 未爆炸的烟花火箭 - 使用transform优化性能 */}
             {!firework.exploded && (
               <div
                 className={style.rocket}
                 style={{
-                  left: firework.x,
-                  top: firework.y,
+                  transform: `translate(${firework.x}px, ${firework.y}px)`,
                   backgroundColor: firework.color
                 }}
               >
@@ -320,19 +349,16 @@ function Animation() {
               </div>
             )}
 
-            {/* 已爆炸的烟花粒子 */}
+            {/* 已爆炸的烟花粒子 - 使用transform和will-change优化 */}
             {firework.exploded && firework.particles.map(particle => (
               <div
                 key={particle.id}
                 className={style.particle}
                 style={{
-                  left: particle.x,
-                  top: particle.y,
+                  transform: `translate(${particle.x}px, ${particle.y}px) scale(${particle.size / 4})`,
                   backgroundColor: particle.color,
-                  width: particle.size,
-                  height: particle.size,
-                  opacity: particle.life,
-                  boxShadow: `0 0 ${particle.size * 2}px ${particle.color}`
+                  opacity: particle.life / particle.maxLife,
+                  willChange: 'transform, opacity'
                 }}
               />
             ))}
@@ -340,9 +366,28 @@ function Animation() {
         ))}
       </div>
 
-      {/* 底部控制面板 */}
+      {/* 底部操作面板 */}
       <div className={style.controlPanel}>
         <h3 className={style.panelTitle}>选择烟花形状</h3>
+        
+        {/* 性能质量选择器 */}
+        <div className={style.qualitySelector}>
+          <span className={style.qualityLabel}>性能模式：</span>
+          {Object.keys(QUALITY_LEVELS).map(level => (
+            <button
+              key={level}
+              className={`${style.qualityButton} ${
+                qualityLevel === level ? style.active : ''
+              }`}
+              onClick={() => setQualityLevel(level as QualityLevel)}
+            >
+              {level === 'LOW' && '低'}
+              {level === 'MEDIUM' && '中'}
+              {level === 'HIGH' && '高'}
+            </button>
+          ))}
+        </div>
+        
         <div className={style.shapeSelector}>
           {Object.values(FireworkShape).map(shape => (
             <button
@@ -352,17 +397,12 @@ function Animation() {
               }`}
               onClick={() => setSelectedShape(shape)}
             >
-              {/* 为每种形状添加对应的emoji图标 */}
               <span className={style.shapeIcon}>
                 {shape === FireworkShape.HEART && '💖'}
-                {shape === FireworkShape.CIRCLE && '⭕'}
-                {shape === FireworkShape.STAR && '⭐'}
                 {shape === FireworkShape.FLOWER && '🌸'}
               </span>
               <span className={style.shapeName}>
                 {shape === FireworkShape.HEART && '心形'}
-                {shape === FireworkShape.CIRCLE && '圆形'}
-                {shape === FireworkShape.STAR && '星形'}
                 {shape === FireworkShape.FLOWER && '花朵'}
               </span>
             </button>

@@ -515,6 +515,229 @@
 
     14.赋值和函数的参数传递是对象时，是拷贝了一份引用副本
 
-    15.对于undef和null， isNull()的返回值都是true
+    15.对于undefined和null， isNull()的返回值都是true
 
-    16.
+9.1：
+    1.Arguments 对象只定义在函数体中，包括了函数的参数和其他属性
+        传入的参数，实参和 arguments 的值会共享，当没有传入时，实参与 arguments 值不会共享
+        除此之外，以上是在非严格模式下，如果是在严格模式下，实参和 arguments 是不会共享的
+
+    2.Arguments 对象的 callee 属性，通过它可以调用函数自身。
+        闭包经问题就可以使用 callee 解决
+        var data = [];
+        for (var i = 0; i < 3; i++) {
+            (data[i] = function () {
+            console.log(arguments.callee.i) 
+            }).i = i;
+        }
+        data[0]();  0
+        data[1]();  1
+        data[2]();  2
+
+    3.// 使用 apply 将 foo 的arguments参数传递给 bar
+        function foo() {
+            bar.apply(this, arguments);
+        }
+        ES6能直接用展开运算符
+
+    4.深入理解：原型链的建立时机
+        // new 操作符的执行过程：
+        // 1. 创建新对象
+        // 2. 设置原型链：obj.__proto__ = Constructor.prototype
+        // 3. 执行构造函数：Constructor.call(obj, ...args)
+
+        // 所以构造函数内部修改 prototype 不会影响已经创建的对象
+
+    5.寄生-构造函数-模式，寄生在构造函数的一种方法。
+        场景：创建一个具有额外方法的特殊数组，但是又不想直接修改Array构造函数
+
+9.2
+    1.Boolean({})  的结果是true， JS共六种数据类型，只有对象空值时不为false
+        对于包装对象也是这样，举个例子：
+        console.log(Boolean(new Boolean(false))) // true
+
+    2.Number 函数不传参数，返回 +0，如果有参数，调用 ToNumber(value)。
+        注意这个 ToNumber 表示的是一个底层规范实现上的方法，并没有直接暴露出来。
+        而 ToNumber 对应的结果表。表如下：
+        参数类型	结果
+        Undefined	NaN
+        Null        +0
+        Boolean 	如果参数是 true，返回 1。参数为 false，返回 +0
+        Number	    返回与之相等的值
+        String	    这段比较复杂，看例子
+
+    3.对象转字符串 和 对象转数字 主要区别， toString(obj)
+        先尝试调用 .toString() 失败 在尝试 .valueOf()  还是 相反的 尝试顺序
+
+    4.注意 ToString \ ToNumber \ ToPrimitive 都是底层规范实现的方法，并没有直接暴露出来
+        和上面说的方法不一样
+
+    5.Number()  的返回值
+        [] 和 [0] 都返回了 0，而 [1, 2, 3] 却返回了一个 NaN。我们分析一下原因：
+        当我们 Number([]) 的时候，先调用 [] 的 valueOf 方法，此时返回 []，因为返回了一个对象而不是原始值，所以又调用了 toString 方法，此时返回一个空字符串，接下来调用 ToNumber 这个规范上的方法，参照对应表，转换为 0, 所以最后的结果为 0。
+        而当我们 Number([1, 2, 3]) 的时候，先调用 [1, 2, 3] 的 valueOf 方法，此时返回 [1, 2, 3]，再调用 toString 方法，此时返回 1,2,3，接下来调用 ToNumber，参照对应表，因为无法转换为数字，所以最后的结果为 NaN。
+
+    6.JSON.stringify  的使用
+        处理基本类型时，与使用toString基本相同，结果都是字符串，除了 undefined
+        console.log(JSON.stringify(null)) // null
+        console.log(JSON.stringify(undefined)) // undefined，注意这个undefined不是字符串的undefined
+        注：console.log(String(undefined));  // "undefined" (字符串)
+        console.log(String(undefined));  // "undefined" (字符串)
+
+        console.log(JSON.stringify(true)) // true
+        console.log(JSON.stringify(42)) // 42
+        console.log(JSON.stringify("42")) // "42"
+
+    7.Object.prototype.toString 方法：
+        根据对象的[[class]]内部属性，返回由 "[object " 和 class 和 "]" 三个部分组成的字符串
+        例如：Object.prototype.toString.call([1,2,3]) → "[object Array]"
+
+    8.console.log('1' == 1);
+        4.x是数字，y是字符串，判断x == ToNumber(y)
+        5.x是字符串，y是数字，判断ToNumber(x) == y
+        6.x是布尔值，判断ToNumber(x) == y
+        7.y是布尔值，判断x ==ToNumber(y)
+        结果很明显，都是转换成数字后再进行比较
+
+    对象与非对象时：console.log( 42 == ['42'])
+        1. x不是字符串或者数字，y是对象，判断x == ToPrimitive(y)
+        2. x是对象，y不是字符串或者数字，判断ToPrimitive(x) == y
+        以这个例子为例，会使用 ToPrimitive 处理 ['42']，调用valueOf，返回对象本身，再调用 toString，返回 '42'，所以
+        42 == ['42'] 相当于 42 == '42' 相当于42 == 42，结果为 true。
+        到此为止，我们已经看完了第2、3、4、5、6、7、8、9步，其他的一概返回 false。
+
+    9.隐式转换 规则总结
+        1. 简单判断方法：
+           有对象 → ToPrimitive
+           要数字 → valueOf 优先
+           要字符串 → toString 优先
+           无对象 → 直接 ToNumber/ToString
+        
+        2. 具体判断步骤：
+           看操作数是否包含对象
+           看操作类型（算术/比较 vs 字符串）
+           确定 PreferredType
+           按顺序调用方法
+        
+        3. 常见场景总结：
+           场景 → 转换方法 → 说明
+           算术运算 → ToNumber → 减法、乘法、除法等
+           比较运算 → ToNumber → 大于、小于、等于等
+           字符串连接 → ToString → + 操作符 + 字符串
+           模板字符串 → ToString → `${}` 插值
+           对象运算 → ToPrimitive → 根据操作类型决定优先级
+
+# 9.4 
+    1.typeof 可是一个正宗的运算符，就跟加减乘除一样
+        所以 可以这样使用 console.log(typeof 'yayu') // string
+
+    2.Object 下还有很多细分的类型，如 Array、Function、Date、RegExp、Error 等
+        使用 Object.prototype.toString 方法识别出更多类型
+        原理： 会返回一个由 "[object " 和 class 和 "]" 组成的字符串
+        用该方法能将 typeof 判断6种类型的能力 扩展到 识别至少 14 种类型，当然也可以算出来，[[class]] 属性至少有 12 个
+
+    3.Window 对象作为客户端的全局对象，有一个 window 属性指向自身。可以利用这个特性判断是否是 Window 对象
+
+    4.JS中处理异步操作的四个方案：
+        回调方案（定时器回调
+        Promise 方案
+        generator 方案
+        async/await 方案
+
+    5.Pointfree 的本质就是使用一些通用的函数，组合出各种复杂运算。上层运算不要直接操作数据，而是通过底层函数去处理。即不使用所要处理的值，只合成运算过程
+
+    6.函数组合（compose） 
+
+    7.在JS中使用递归，会不停的创建执行上下文、压入执行上下文栈，内存消耗很大，如何优化
+        尾调用: 指函数内部的最后一个动作是函数调用。该调用的返回值，直接返回给函数
+        
+        函数调用自身，称为递归。如果尾调用自身，就称为尾递归：
+            二者区别在于，上下文栈的行为
+
+    8.惰性函数：
+    原理：闭包 + 重写函数， 注意，返回值永远一样
+        var foo = function() {
+            var t = new Date();
+            foo = function() {
+                return t;
+            };
+            return foo();
+        };
+    背景：每次调用都需要条件判断，但其实只需判断一次，接下来使用都不会发生改变，考虑使用惰性函数
+                
+9.6：
+    1.获取除第一个参数(fn)外的所有参数
+        var args = [].slice.call(arguments, 1);
+        // arguments 是类数组对象，不是真正的数组
+        // 使用 slice.call 将其转换为真正的数组，并从索引1开始截取
+
+    2.数组合并
+        var newArgs = args.concat([].slice.call(arguments));
+        concat返回新数组，不修改原数组
+
+    3.大多数语言提供自动内存管理，减轻程序员的负担，这被称为"垃圾回收机制"
+
+    4.作用域块 和 执行上下文栈 区别
+
+## 以下是TS内容
+
+9.6： 
+    1.默认情况下null和undefined是所有类型的子类型， 就是说你可以把 null和 undefined赋值给 number类型的变量
+
+    2.给接口添加字符串索引签名   [propName: string]: any 
+        允许接口接受任意的字符串属性名，并且这些属性的值可以是任意类型。
+    
+    3.函数重载
+        重载签名（Overload Signatures）
+            function add (arg1: string, arg2: string): string    // 重载签名1
+            function add (arg1: number, arg2: number): number    // 重载签名2
+        实现签名（Implementation Signature）
+            function add (arg1: string | number, arg2: string | number) {
+                // 具体的实现逻辑
+            }
+        工作原理
+        当调用函数时，TypeScript 会：
+        按顺序检查重载签名
+        找到第一个匹配的签名
+        使用该签名的返回类型
+    
+    4.类型继承
+        type Params = string number
+        class Stack<Textends Params>
+    
+    5.索引类型、约束类型
+        索引类型允许我们动态地访问和操作对象的属性类型。
+        1. 索引类型查询操作符 keyof
+        keyof 操作符可以获取一个类型的所有键名组成的联合类型
+    
+    6.映射类型
+        type Readonly<T> = {
+            readonly [P in keyof T]: T[P];
+        };
+        等价于 ==》
+        interface Obj {
+            a: string
+            b: string
+        }
+
+    7.条件类型
+        T extends U ? X : Y
+    extends 表示类型兼容性或子类型关系
+    // 基本理解：T extends U 意思是 "T 是否可以赋值给 U"
+    例如 "aa" extends String === true
+
+    8.@expression  装饰器的形式其实是Object.defineProperty的语法糖
+
+
+9.7：
+    1.align-items: flex-start 关键设置：交叉轴（垂直）上顶部对齐
+        如果不设置这个，默认是 stretch，会拉伸所有子元素到相同高度
+        设置为 flex-start 后，当文本换行撑高时，标签和内容都从顶部开始对齐
+
+9.8：
+    1.装饰器：装饰器（Decorator）是一种设计模式和语法特性，它允许我们在不修改原有代码的情况下，给类、方法、属性或参数添加额外的功能。
+        本质上是一个函数，它接收被装饰的目标作为参数，并可以返回一个新的目标或修改原目标
+    
+    2.命名空间本质上是一个对象，作用是将一系列相关的全局变量组织到一个对象的属性
+
+9.9
