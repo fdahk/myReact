@@ -1052,6 +1052,36 @@ React数据与视图、生命周期等 ：
     1.数据显示问题
         一般都与生命周期相关，渲染时机的问题
 
-    2.cookie
+    2.Cookie、Session、Token ：重要的身份认证和状态管理概念
+    功能定位：
+    Cookie: 数据传输和存储机制
+    Session: 服务器端会话管理方案
+    Token: 客户端身份凭证方案
+        Cookie 是存储在用户浏览器中的小型文本文件，用于在 HTTP 请求之间保持状态信息。
+        存储位置：客户端浏览器
+        大小限制：通常 4KB 左右
+        生命周期：可设置过期时间
+        作用域：可设置域名和路径限制
+        自动发送：符合条件的请求会自动携带
+        // 设置 Cookie 的常见属性
+        document.cookie = "username=john; expires=Thu, 18 Dec 2024 12:00:00 UTC; path=/; domain=.example.com; secure; httpOnly; sameSite=strict";
+        使用场景：记住登录状态、购物车信息、用户偏好设置、访问统计
 
-    3.
+        Session 是服务器端的会话管理机制，为每个用户会话分配唯一标识符，相关数据存储在服务器端
+            特点
+            存储位置：服务器端
+            安全性：相对安全，敏感数据不暴露给客户端
+            容量：理论上无限制
+            依赖性：依赖 Cookie 或 URL 参数传递 Session ID
+
+
+9.14：
+    1.JWT的三个部分
+        const parts = token.split('.');
+        console.log('JWT token 包含 ' + parts.length + ' 个部分:');
+        console.log('1. Header: ' + parts[0]);
+        console.log('2. Payload: ' + parts[1]);  
+        console.log('3. Signature: ' + parts[2]);
+        Header + Payload: 只是Base64编码，任何人都能解码查看 // 1.转换为JSON字符串 =》 Base64URL编码
+        Signature: 使用服务端密钥签名，确保token未被篡改 
+        过期时间: 内置在token中，无法伪造（因为有签名保护）// 1.使用密钥和算法生成签名 =》 Base64URL编码签名
