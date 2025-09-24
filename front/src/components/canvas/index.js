@@ -1311,9 +1311,9 @@ class Canvas {
       game.enemies.push({
         x: Math.random() * (800 - 20),                    // 随机x坐标（确保不超出屏幕）
         y: -20,                                           // 从屏幕上方开始（负y坐标）
-        width: 20,                                        // 敌人宽度
+        width: 10,                                        // 敌人宽度
         height: 20,                                       // 敌人高度
-        speed: 2 + Math.random() * 3,                     // 随机移动速度（2-5像素/帧）
+        speed: 5 + Math.random() * 3,                     // 随机移动速度（像素/帧）
         color: `hsl(${Math.random() * 60}, 70%, 50%)`     // 随机颜色（HSL格式，色调0-60度）
       });
     };
@@ -1364,7 +1364,7 @@ class Canvas {
 
       // 敌人生成逻辑
       enemySpawnTimer++;  // 增加计时器
-      if (enemySpawnTimer > 60) {  // 每60帧（约1秒，假设60FPS）生成一个敌人
+      if (enemySpawnTimer > 20) {  // 每60帧（约1秒，假设60FPS）生成一个敌人
         createEnemy();       // 创建新敌人
         enemySpawnTimer = 0; // 重置计时器
       }
@@ -1384,7 +1384,7 @@ class Canvas {
         
         // 移除超出屏幕底部的敌人
         if (enemy.y > 600) {
-          game.score += 10;  // 玩家成功躲避，增加分数
+          game.score += 1;  // 玩家成功躲避，增加分数
           return false;      // 从数组中移除这个敌人
         }
         
@@ -1396,7 +1396,7 @@ class Canvas {
       // 绘制玩家矩形
       this.ctx.fillRect(game.player.x, game.player.y, game.player.width, game.player.height);
       
-      // 绘制玩家边框，使其更明显
+      // 绘制玩家边框
       this.ctx.strokeStyle = '#2980b9';  // 深蓝色边框
       this.ctx.lineWidth = 2;            // 边框线宽
       // 绘制玩家边框
@@ -1415,8 +1415,8 @@ class Canvas {
       });
 
       // 绘制游戏分数
-      this.ctx.fillStyle = '#333';         // 文字颜色为深灰色
-      this.ctx.font = 'bold 20px Arial';   // 粗体大字体
+      this.ctx.fillStyle = '#333';         
+      this.ctx.font = 'bold 20px Arial';   
       this.ctx.fillText(`分数: ${game.score}`, 20, 30);  // 在左上角显示分数
 
       // 绘制控制说明
