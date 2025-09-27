@@ -1295,8 +1295,8 @@ class Canvas {
       player: { 
         x: 400,      // 玩家初始x坐标（屏幕中央）
         y: 500,      // 玩家初始y坐标（靠近底部）
-        width: 30,   // 玩家宽度
-        height: 30,  // 玩家高度
+        width: 10,   // 玩家宽度
+        height: 10,  // 玩家高度
         speed: 5     // 玩家移动速度（每帧移动像素数）
       },
       enemies: [],     // 敌人数组，存储所有敌人对象
@@ -1304,7 +1304,7 @@ class Canvas {
       gameOver: false  // 游戏是否结束标志
     };
     const game = this.game;  // 局部使用
-
+    let maxScore = localStorage.getItem('maxScore') || 0;
     // 创建敌人的函数
     const createEnemy = () => {
       // 向敌人数组添加新的敌人对象
@@ -1325,7 +1325,6 @@ class Canvas {
       // 根据事件类型设置按键状态：按下为true，抬起为false
       keys[e.key] = e.type === 'keydown';
     };
-    
     // 添加键盘事件监听器
     document.addEventListener('keydown', keyHandler);  
     document.addEventListener('keyup', keyHandler);    
@@ -1334,6 +1333,7 @@ class Canvas {
     let enemySpawnTimer = 0;  // 敌人生成计时器
     const gameLoop = () => {
       // 如果游戏结束，清理资源并退出循环
+      
       if (game.gameOver) {
         // 移除键盘事件监听器，防止内存泄漏
         document.removeEventListener('keydown', keyHandler);
@@ -1385,6 +1385,10 @@ class Canvas {
         // 移除超出屏幕底部的敌人
         if (enemy.y > 600) {
           game.score += 1;  // 玩家成功躲避，增加分数
+          if(game.score > maxScore) {
+            localStorage.setItem('maxScore', game.score);
+          }
+          
           return false;      // 从数组中移除这个敌人
         }
         
@@ -1418,6 +1422,8 @@ class Canvas {
       this.ctx.fillStyle = '#333';         
       this.ctx.font = 'bold 20px Arial';   
       this.ctx.fillText(`分数: ${game.score}`, 20, 30);  // 在左上角显示分数
+      this.ctx.fillText(`记录: ${maxScore}`, 20, 50);  
+      maxScore = localStorage.getItem('maxScore') || 0;
 
       // 绘制控制说明
       this.ctx.font = '14px Arial';        // 较小的字体

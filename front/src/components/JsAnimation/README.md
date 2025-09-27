@@ -100,49 +100,6 @@ const returnParticleToPool = useCallback((particle: Particle) => {
 })
 ```
 
-### 4. 数量控制优化
-
-#### 4.1 最大烟花数量限制
-```tsx
-const PERFORMANCE_CONFIG = {
-  MAX_FIREWORKS: 5, // 最大同时存在的烟花数量
-  MAX_PARTICLES_PER_FIREWORK: 30, // 每个烟花的最大粒子数
-}
-```
-
-#### 4.2 性能等级系统
-- **三档质量**：省电、平衡、高质量
-- **动态调整**：根据用户选择调整粒子数量和烟花数量
-```tsx
-const QUALITY_LEVELS = {
-  LOW: { particles: 20, fireworks: 3 },    // 省电模式
-  MEDIUM: { particles: 30, fireworks: 5 }, // 平衡模式
-  HIGH: { particles: 50, fireworks: 8 }    // 高质量模式
-} as const
-```
-
-### 5. CSS动画优化
-
-#### 5.1 移除复杂动画效果
-- **移除项目**：
-  - 火箭震动动画 (`rocketShake`)
-  - 粒子发光动画 (`particleGlow`)
-  - 复杂的 `filter` 效果
-
-#### 5.2 简化阴影效果
-```css
-/* 优化前：多重阴影 */
-box-shadow: 
-  0 0 10px currentColor,
-  0 0 20px currentColor,
-  0 0 30px currentColor;
-
-/* 优化后：单一阴影 */
-box-shadow: 0 0 15px currentColor;
-```
-
-### 6. 响应式性能优化
-
 #### 6.1 无障碍支持
 - **减少动画模式**：为运动敏感用户禁用动画
 ```css
@@ -152,24 +109,5 @@ box-shadow: 0 0 15px currentColor;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-}
-```
-
-### 1. 关键指标
-- **FPS**：目标保持在60FPS
-- **内存使用**：监控是否有内存泄漏
-- **DOM节点数**：控制在合理范围内
-
-
-### 2. 自定义配置
-```tsx
-// 可根据设备性能动态调整
-const getOptimalQuality = () => {
-  const memory = (navigator as any).deviceMemory || 4
-  const cores = navigator.hardwareConcurrency || 4
-  
-  if (memory < 4 || cores < 4) return 'LOW'
-  if (memory >= 8 && cores >= 8) return 'HIGH'
-  return 'MEDIUM'
 }
 ```

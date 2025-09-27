@@ -740,4 +740,5 @@
     
     2.命名空间本质上是一个对象，作用是将一系列相关的全局变量组织到一个对象的属性
 
-9.9
+9.26
+    1.const decoder = new TextDecoder('utf-8'); // textDecoder 是 JavaScript 内置的类，用于将字节数据转换为字符串

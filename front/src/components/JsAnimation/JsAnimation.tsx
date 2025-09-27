@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react'
-import style from './animation.module.scss'
+import style from './JsAnimation.module.scss'
 
 // 性能配置
 const PERFORMANCE_CONFIG = {

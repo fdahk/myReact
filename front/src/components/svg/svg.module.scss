@@ -1,0 +1,109 @@
+.svgContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding: 20px;
+  background: #f8f9fa;
+  min-height: 100vh;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 齿轮旋转 */
+.gear {
+  animation: rotate 4s linear infinite;
+  transform-origin: 100px 100px;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* 脉冲 */
+.pulseRing {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.pulseRing2 {
+  animation: pulse 2s ease-in-out infinite 0.5s;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.3;
+    transform: scale(1.5);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* 路径绘制 */
+.drawPath {
+  stroke-dasharray: 400; // stroke-dasharray: 虚线长度
+  stroke-dashoffset: 400; // stroke-dashoffset: 虚线偏移
+  animation: drawPath 4s ease-in-out infinite;
+}
+
+@keyframes drawPath {
+  0% {
+    stroke-dashoffset: 400;
+  }
+  50% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: -400;
+  }
+}
+
+/* 移动的圆点 */
+.movingCircle {
+  opacity: 0.8;
+}
+
+/* 变形 */
+.morphShape {
+  animation: morph 3s ease-in-out infinite;
+  transform-origin: 150px 167px;  /* 设置旋转中心为多边形中心 */
+}
+
+@keyframes morph {
+  0% {
+    transform: scale(1) rotate(0deg);
+  }
+  33% {
+    transform: scale(2) rotate(120deg);
+  }
+  66% {
+    transform: scale(0.2) rotate(240deg);
+  }
+  100% {
+    transform: scale(1) rotate(360deg);
+  }
+}
+
+/* 文字路径 */
+.pathText {
+  font-family: 'Arial', sans-serif;
+  font-weight: bold;
+  animation: textGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes textGlow {
+  from {
+    fill: #043317; // fill: 填充颜色
+    filter: drop-shadow(0 0 5px #054620); // filter: 滤镜
+  }
+  to {
+    fill: #84f0b1;
+    filter: drop-shadow(0 0 15px #6ee6a0);
+  }
+}
+

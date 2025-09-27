@@ -25,3 +25,50 @@
     使用 Docker 容器技术
     将模型权重、配置和数据打包成 Modelfile
     一条命令即可启动模型：ollama run llama2
+
+### Coze
+chat SDK 安装代码
+<!-- SDK引入 -->
+<!-- lf-cdn.coze.cn: Coze的CDN服务器
+1.2.0-beta.10: SDK版本号（测试版本）
+libs/cn/index.js: 中国区版本的SDK文件 -->
+<script src="https://lf-cdn.coze.cn/obj/unpkg/flow-platform/chat-app-sdk/1.2.0-beta.10/libs/cn/index.js"></script>
+<script>
+  //创建一个Web聊天客户端实例
+  new CozeWebSDK.WebChatClient({
+    config: {
+      bot_id: '7553978463314247690',
+    },
+    componentProps: {
+      title: 'Coze',
+    },
+    auth: {
+      type: 'token',
+      token: 'pat_********',
+      onRefreshToken: function () {
+        return 'pat_********'
+      }
+    }
+  });
+</script>
+
+1.数据流式处理原理和实现
+    1.HTTP 流式响应原理：
+    客户端请求:
+    POST /api/chat HTTP/1.1
+    Content-Type: application/json
+    { "message": "写一首诗", "stream": true }
+
+    服务器响应:
+    HTTP/1.1 200 OK
+    Content-Type: text/plain
+    Transfer-Encoding: chunked  ← 关键：分块传输编码，这样前端才知道是流式
+
+    数据块1: {"content":"春"}
+    数据块2: {"content":"风"}  
+    ...
+
+    2.浏览器端流式处理：ReadableStream API
+        const reader = response.body?.getReader();
+
+    连接方式：HTTP 长连接（单向数据流）
