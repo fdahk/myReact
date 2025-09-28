@@ -1,4 +1,3 @@
-9.24:
     1.translate属性的参数：
         - translate(x) - 只在x轴平移，y轴默认为0
         - translate(x, y) - x轴和y轴同时平移
@@ -18,7 +17,7 @@
         - Y轴：从上到下为正方向 (↓)  
         - Z轴：从屏幕向外为正方向 (朝向用户)
         
-        **统一性说明**：
+        **统一性**：
         - CSS transform、position、margin、padding等都遵循相同坐标系
         - HTML Canvas 2D context也使用相同坐标系
         - SVG默认也使用相同坐标系
@@ -58,22 +57,13 @@
     6.background: linear-gradient(to right, #f0f0f0 %0, #01ff52 %100);
         /* 关键字方向 */
         to top          /* 从下到上 */
-        to bottom       /* 从上到下（默认） */
-        to left         /* 从右到左 */
-        to right        /* 从左到右 */
 
         /* 对角线方向 */
-        to top left     /* 到左上角 */
-        to top right    /* 到右上角 */
-        to bottom left  /* 到左下角 */
-        to bottom right /* 到右下角 */
+        to top left     /* 到左上角 */。。。。。
 
         /* 角度值（更精确） */
         0deg            /* 从下到上 */
         90deg           /* 从左到右 */
-        180deg          /* 从上到下 */
-        270deg          /* 从右到左 */
-        45deg           /* 45度角 */
     
     7.drop-shadow() 和 box-shadow 区别：
         **box-shadow**：
@@ -96,7 +86,6 @@
         - visible：会显示元素的"背面"（内容会镜像显示）
         - hidden：翻转后元素完全消失，不占用视觉空间
 
-        **流程**：
         1. 初始状态：显示正面，背面隐藏（因为背面已旋转180度）
         2. hover时：整个卡片旋转180度
         3. 结果：正面旋转到背面位置被隐藏，背面旋转到正面位置显示
@@ -132,10 +121,7 @@
            matrix3d(16个参数)     /* 4x4变换矩阵 */
 
 
-# CSS 完整参考文档
-
-## 目录
-- [基础概念](#基础概念)
+# CSS 参考文档
 - [CSS语法](#css语法)
 - [选择器](#选择器)
 - [布局属性](#布局属性)
@@ -146,9 +132,6 @@
 - [函数](#函数)
 - [高级特性](#高级特性)
 
-## 基础概念
-
-### CSS是什么
 CSS (Cascading Style Sheets) 层叠样式表，用于描述HTML或XML文档的表现形式。
 
 ### 核心概念
@@ -166,27 +149,214 @@ CSS (Cascading Style Sheets) 层叠样式表，用于描述HTML或XML文档的�
 
 ## CSS语法
 
-### 基本语法结构
+### @规则详解
+
+#### @charset - 字符编码声明
+**定义**：声明CSS文件的字符编码格式
+
+**语法**：
 ```css
-选择器 {
-    属性: 值;
-    属性: 值;
+@charset "encoding-name";
+```
+1. **位置要求**：必须是CSS文件的第一行，前面不能有任何字符（包括注释、空格）
+2. **语法严格**：必须使用双引号，不能用单引号
+3. **分号必需**：语句必须以分号结尾
+4. **大小写敏感**：编码名称区分大小写
+
+**常用编码**：
+- `@charset "UTF-8";` - 最常用，支持全球所有字符
+- `@charset "ISO-8859-1";` - 西欧字符集
+- `@charset "GBK";` - 中文字符集（较旧）
+
+**示例**：
+```css
+@charset "UTF-8";
+
+/* 现在可以安全使用中文、emoji等字符 */
+.chinese-text {
+    content: "你好世界 🌍";
+    font-family: "微软雅黑", sans-serif;
 }
 ```
 
-### 注释语法
+**注意事项**：
+- 如果不声明，浏览器会根据HTTP头部、BOM或启发式方法猜测编码
+- HTML中的`<meta charset="UTF-8">`与CSS中的`@charset`是独立的
+- 现代开发中，UTF-8是标准选择
+- 服务器的Content-Type头部优先级高于@charset
+
+**最佳实践**：
+1. 总是在CSS文件开头声明`@charset "UTF-8";`
+2. 确保文件实际保存为UTF-8编码
+3. 配置服务器正确发送Content-Type头部
+
+#### @font-face - 自定义字体
+**定义**：允许网页使用自定义字体，而不依赖用户系统字体
+
+**语法**：
 ```css
-/* 这是CSS注释 */
+@font-face {
+    font-family: "字体名称";
+    src: url("字体文件路径") format("字体格式");
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
 ```
 
-### @规则
-- `@charset` - 字符编码声明
+**核心属性**：
+- `font-family`: 自定义字体名称（后续可用此名称引用）
+- `src`: 字体文件来源，支持多个备选源
+- `font-weight`: 字体粗细（100-900, normal, bold等）
+- `font-style`: 字体样式（normal, italic, oblique）
+- `font-display`: 字体加载显示策略
+
+**font-display 值详解**：
+- `auto`: 浏览器默认行为
+- `block`: 先隐藏文本，字体加载完成后显示
+- `swap`: 先用备用字体显示，字体加载完成后替换
+- `fallback`: 短暂隐藏后显示备用字体，有限时间内替换
+- `optional`: 仅在网络状况良好时使用自定义字体
+
+**示例**：
+```css
+@font-face {
+    font-family: "MyCustomFont";
+    src: url("fonts/mycustomfont.woff2") format("woff2"),
+         url("fonts/mycustomfont.woff") format("woff"),
+         url("fonts/mycustomfont.ttf") format("truetype");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap; /* 优化加载体验 */
+}
+
+/* 使用自定义字体 */
+.custom-text {
+    font-family: "MyCustomFont", Arial, sans-serif;
+}
+```
+
+**字体格式支持**：
+- `woff2`: 最现代，压缩率最高，推荐首选
+- `woff`: 广泛支持的现代格式
+- `ttf/otf`: 传统格式，文件较大
+- `eot`: IE专用格式（已过时）
+
+#### @supports - 特性查询
+**定义**：检测浏览器是否支持特定CSS特性，实现渐进增强
+
+**语法**：
+```css
+@supports (属性: 值) {
+    /* 支持时的样式 */
+}
+
+@supports not (属性: 值) {
+    /* 不支持时的样式 */
+}
+```
+
+**逻辑操作符**：
+- `and`: 且逻辑 - 所有条件都满足
+- `or`: 或逻辑 - 任一条件满足
+- `not`: 非逻辑 - 条件不满足
+
+**示例**：
+```css
+/* 检测Grid支持 */
+@supports (display: grid) {
+    .container {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@supports not (display: grid) {
+    .container {
+        display: flex;
+        flex-wrap: wrap;
+    }
+}
+
+/* 复合条件检测 */
+@supports (display: grid) and (gap: 1rem) {
+    .modern-grid {
+        display: grid;
+        gap: 1rem;
+    }
+}
+
+/* 检测CSS自定义属性 */
+@supports (--custom: value) {
+    .theme {
+        --primary-color: #007acc;
+        color: var(--primary-color);
+    }
+}
+
+/* 检测新的CSS函数 */
+@supports (width: clamp(1rem, 5vw, 3rem)) {
+    .responsive-text {
+        font-size: clamp(1rem, 2.5vw, 2rem);
+    }
+}
+```
+
+**常见检测场景**：
+- CSS Grid/Flexbox支持
+- CSS变量支持
+- 新的CSS函数（clamp, min, max）
+- 现代布局特性
+- 滤镜效果支持
+
+#### @namespace - 命名空间声明
+**定义**：为CSS选择器声明XML命名空间，主要用于处理XML/XHTML文档
+
+**语法**：
+```css
+@namespace url("命名空间URI");
+@namespace 前缀 url("命名空间URI");
+```
+
+**使用场景**：
+主要用于处理包含多个XML命名空间的文档，如SVG内嵌的XHTML
+
+**示例**：
+```css
+/* 声明默认命名空间 */
+@namespace url("http://www.w3.org/1999/xhtml");
+
+/* 声明带前缀的命名空间 */
+@namespace svg url("http://www.w3.org/2000/svg");
+@namespace mathml url("http://www.w3.org/1998/Math/MathML");
+
+/* 使用命名空间选择器 */
+/* 选择XHTML中的div元素 */
+div {
+    color: blue;
+}
+
+/* 选择SVG命名空间中的circle元素 */
+svg|circle {
+    fill: red;
+}
+
+/* 选择MathML命名空间中的math元素 */
+mathml|math {
+    font-family: serif;
+}
+```
+
+**注意事项**：
+- 现代Web开发中很少使用
+- 主要用于复杂的XML文档处理
+- HTML5中通常不需要命名空间声明
+- 必须在所有其他CSS规则之前声明
+
+#### 其他@规则
 - `@import` - 导入外部样式表
-- `@media` - 媒体查询
+- `@media` - 媒体查询  
 - `@keyframes` - 定义动画关键帧
-- `@font-face` - 定义字体
-- `@supports` - 特性查询
-- `@namespace` - 命名空间声明
 
 ## 选择器
 
@@ -200,8 +370,8 @@ CSS (Cascading Style Sheets) 层叠样式表，用于描述HTML或XML文档的�
 ### 属性选择器详细语法
 - `[attr]` - 存在attr属性
 - `[attr=value]` - attr属性值等于value
-- `[attr~=value]` - attr属性值包含value单词
-- `[attr|=value]` - attr属性值以value开头，后跟连字符
+- `[attr~=value]` - attr属性值包含value单词，例如en-US
+- `[attr|=value]` - attr属性值以value开头，后跟连字符，如zh-CN
 - `[attr^=value]` - attr属性值以value开头
 - `[attr$=value]` - attr属性值以value结尾
 - `[attr*=value]` - attr属性值包含value子串
