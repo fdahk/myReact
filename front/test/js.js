@@ -1,18 +1,25 @@
 /**
- * @param {number[]} pizzas
+ * @param {string} word
  * @return {number}
  */
-var maxWeight = function(pizzas) {
-    let ans = 0
-    pizzas.sort((a, b) => a - b)
-    console.log(pizzas)
-    let tp = pizzas.length / 4
-    for(let i = 0; i < Math.ceil(tp/2); i++) {
-
-        ans += pizzas[pizzas.length - 1 - i]
+var numberOfSpecialChars = function(word) {
+    const low = {} 
+    const up = {}
+    const res = {}
+    let i; 
+    for(i of word) {
+        if(i >= 'a' && i <= 'z' && !up[i.toUpperCase()] ) {
+            low[i] = true 
+        }
+        else if(i >= 'A' && i <= 'Z') {
+            up[i] = true
+            if(low[i.toLowerCase()] && low[i.toLowerCase()] !== false) {
+                res[i] = true
+            }
+        } 
+        else if(i >= 'a' && i <= 'z' && up[i.toUpperCase()]) {
+            res[i] = false
+        }
     }
-    for(let i = 1; i <= Math.floor(tp/2); i++) {
-        ans += pizzas[pizzas.length - 1 - tp - i*2 + 1]
-    }
-    return ans
+    return Object.keys(res).length
 };
