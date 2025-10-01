@@ -742,3 +742,6 @@
 
 9.26
     1.const decoder = new TextDecoder('utf-8'); // textDecoder 是 JavaScript 内置的类，用于将字节数据转换为字符串
+
+    2.this.history.length = this.cur 利用了 JS 数组的一个特性：通过直接修改 length 属性来截断数组。
+        将数组的 length 属性设置为一个比当前长度小的值时，数组会自动删除超出新长度的所有元素
