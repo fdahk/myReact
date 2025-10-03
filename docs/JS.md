@@ -756,6 +756,10 @@
 
     3.map:
 
+new Array(m * n).fill(0);
+
+
+
 ## JavaScript 原生对象和方法
 
 ### 1. 全局对象 (Global Objects)
