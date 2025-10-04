@@ -171,7 +171,6 @@ CSS (Cascading Style Sheets) 层叠样式表，用于描述HTML或XML文档的�
 **示例**：
 ```css
 @charset "UTF-8";
-
 /* 现在可以安全使用中文、emoji等字符 */
 .chinese-text {
     content: "你好世界 🌍";
@@ -358,6 +357,7 @@ mathml|math {
 - `@media` - 媒体查询  
 - `@keyframes` - 定义动画关键帧
 
+
 ## 选择器
 
 ### 基础选择器
@@ -421,6 +421,7 @@ mathml|math {
 - `::first-letter` - 首字母
 - `::selection` - 选中文本
 - `::placeholder` - 占位符文本
+
 
 ## 布局属性
 
@@ -525,31 +526,10 @@ place-self: <align-self> <justify-self>;
 
 ### 盒模型属性
 ```css
-/* 宽度和高度 */
-width: <length> | <percentage> | auto;
-height: <length> | <percentage> | auto;
-min-width: <length> | <percentage>;
-max-width: <length> | <percentage> | none;
-min-height: <length> | <percentage>;
-max-height: <length> | <percentage> | none;
-
-/* 内边距 */
-padding: <length> | <percentage>;
-padding-top: <length> | <percentage>;
-padding-right: <length> | <percentage>;
-padding-bottom: <length> | <percentage>;
-padding-left: <length> | <percentage>;
-
-/* 外边距 */
-margin: <length> | <percentage> | auto;
-margin-top: <length> | <percentage> | auto;
-margin-right: <length> | <percentage> | auto;
-margin-bottom: <length> | <percentage> | auto;
-margin-left: <length> | <percentage> | auto;
-
 /* 盒模型计算方式 */
 box-sizing: content-box | border-box;
 ```
+
 
 ### 边框属性
 ```css
@@ -560,16 +540,10 @@ border-color: <color>;
 
 /* 单边边框 */
 border-top: <border-width> <border-style> <border-color>;
-border-right: <border-width> <border-style> <border-color>;
-border-bottom: <border-width> <border-style> <border-color>;
-border-left: <border-width> <border-style> <border-color>;
 
 /* 圆角 */
 border-radius: <length> | <percentage>;
 border-top-left-radius: <length> | <percentage>;
-border-top-right-radius: <length> | <percentage>;
-border-bottom-right-radius: <length> | <percentage>;
-border-bottom-left-radius: <length> | <percentage>;
 
 /* 边框图像 */
 border-image: <source> <slice> <width> <outset> <repeat>;
@@ -579,6 +553,7 @@ border-image-width: <length> | <percentage> | <number> | auto;
 border-image-outset: <length> | <number>;
 border-image-repeat: stretch | repeat | round | space;
 ```
+
 
 ## 文字和字体属性
 
@@ -835,6 +810,7 @@ hsla(0, 100%, 50%, 0.5)
 /* 系统颜色 */
 currentColor
 ```
+
 
 ## 函数
 
@@ -1120,8 +1096,7 @@ speak-header: once | always;
 
 ---
 
-## 注意事项
-
+## 开发注意
 1. **浏览器兼容性**: 新特性需要检查浏览器支持情况
 2. **性能考虑**: 某些属性会触发重排重绘，影响性能
 3. **响应式设计**: 使用媒体查询和弹性单位适配不同设备
@@ -1129,9 +1104,253 @@ speak-header: once | always;
 5. **语义化**: 选择合适的HTML元素和CSS类名
 6. **代码组织**: 使用预处理器、CSS模块或其他工具组织代码
 
-## 参考资源
 
-- [MDN CSS参考](https://developer.mozilla.org/en-US/docs/Web/CSS)
-- [CSS规范](https://www.w3.org/Style/CSS/)
-- [Can I Use](https://caniuse.com/) - 浏览器兼容性查询
-- [CSS Tricks](https://css-tricks.com/) - CSS技巧和教程
+## 高级与现代特性补充
+
+### 级联层（Cascade Layers）
+**核心**：使用 `@layer` 明确层级顺序，降低样式冲突；`revert-layer` 快速回退当前层设置。
+```css
+@layer reset, theme, components;
+
+@layer reset {
+  *, *::before, *::after { margin: 0; padding: 0; }
+}
+
+@layer theme {
+  :root { --brand: oklch(65% 0.15 260); }
+}
+
+@layer components {
+  .btn { color: var(--brand); }
+}
+
+.btn { color: red; /* 普通层，晚于已声明层，仍被 components 层覆盖 */ }
+
+.btn.alt { color: revert-layer; /* 回退到更低层对该属性的定义 */ }
+```
+要点：
+- `@layer` 顺序定义优先于来源顺序；未声明的层按首次出现顺序加入。
+- `:where()` 零特异性常与 `@layer` 配合以最小化冲突。
+
+### 现代选择器与关系伪类
+- `:has()` 关系伪类（父选子/同级联动）：
+```css
+/* 父元素包含 .error 子孙时高亮自己 */
+form:has(.error) { outline: 1px solid color-mix(in oklch, red 70%, black); }
+
+/* 卡片内有选中复选框时显示工具栏 */
+.card:has(input[type="checkbox"]:checked) .toolbar { display: block; }
+```
+- `:is()`、`:where()` 简化复杂选择器，`where` 特异性为0；
+- `:not()` 支持复杂选择器；
+- 扩展的 `:nth-child(An+B of <selector-list>)`：
+```css
+/* 仅统计可见项中的奇数序 */
+.list > :nth-child(odd of :not([hidden])) { background: hsl(0 0% 95%); }
+```
+- 可用性增强：`:focus-visible`、`:focus-within`、`:target-within`、`:dir()`。
+
+### 容器查询（Container Queries）与容器单位
+```css
+/* 声明容器 */
+.card { container-type: inline-size; container-name: card; }
+
+/* 尺寸查询 */
+@container card (min-width: 480px) {
+  .card .media { grid-template-columns: 1fr 2fr; }
+}
+
+/* 样式查询（Style Queries）*/
+@container style(--variant: "dense") {
+  .card { gap: 8px; }
+}
+
+/* 容器相对单位 */
+.title { font-size: clamp(16px, 4cqw, 24px); }
+```
+要点：
+- 必须指定 `container-type`（常用 `inline-size`）；
+- 容器单位：`cqw` `cqh` `cqi` `cqb` `cqmin` `cqmax`；
+- 样式查询依赖容器 `@container style(...)` 与自定义属性。
+
+### CSS 嵌套（CSS Nesting）
+```css
+.card {
+  & .title { font-weight: 600; }
+  &:hover { box-shadow: 0 4px 16px rgb(0 0 0 / 0.1); }
+  .btn {
+    &.primary { background: color-mix(in oklch, var(--brand) 80%, white); }
+  }
+}
+```
+规则：
+- 使用 `&` 明确当前选择器位置；
+- 顶层可直接嵌套 `@media`、`@supports`、`@layer`；
+- 复杂嵌套建议配合 `:is()` 限制特异性与展开规模。
+
+### 新一代颜色与颜色函数（CSS Color 4/5）
+```css
+.swatch {
+  /* 新色彩空间 */
+  color: oklch(65% 0.12 265);
+  background: color(display-p3 0.2 0.6 0.9);
+
+  /* 颜色混合 */
+  border-color: color-mix(in oklab, red 40%, blue);
+
+  /* 相对颜色语法 */
+  --bg: #0af;
+  background-color: color(from var(--bg) oklch l c h / 0.85);
+}
+```
+要点：`lab()` `lch()` `oklab()` `oklch()` `hwb()` `color()` `color-mix()`；广色域需配合媒体查询 `@media (color-gamut: p3)` 做降级。
+
+### 视口与动态视口单位
+- 新单位：`svw/svh`（小视口），`lvw/lvh`（大视口），`dvw/dvh`（动态视口）；
+- 文本相关单位：`lh`、`rlh`；字体单位：`cap`、`ic`；
+- 逻辑视口单位：`vi`、`vb`；
+```css
+header { min-height: 100dvh; }
+.hero { padding-block: 10svh; }
+.title { margin-block-start: 1lh; font-size: clamp(1rem, 2vi, 2rem); }
+```
+
+### 媒体查询 Level 4/5 与范围语法
+```css
+/* 范围语法 */
+@media (600px <= width <= 1200px) { /* ... */ }
+
+/* 对比度与数据节省偏好 */
+@media (prefers-contrast: more) { /* 强化边界与阴影 */ }
+@media (prefers-reduced-data: reduce) { /* 降低大图/动画 */ }
+
+/* 显示能力 */
+@media (dynamic-range: high) { /* HDR 优化 */ }
+```
+
+### 滚动驱动动画（Scroll-Linked Animations）
+```css
+@scroll-timeline gallery {
+  source: auto; /* 或者选择器 */
+  orientation: block;
+}
+
+.card {
+  animation: fade-in 1s linear both;
+  animation-timeline: gallery;
+  animation-range: entry 0% cover 60%;
+}
+
+@keyframes fade-in { from { opacity: 0 } to { opacity: 1 } }
+```
+补充：`view-timeline-*` 适用于基于元素视图进入/离开区间的动画；`timeline-scope` 用于限定时间线作用域。
+
+### 视图过渡（View Transitions）
+```css
+/* 单页/同源导航过渡伪元素 */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 400ms;
+}
+```
+要点：可为命名视图创建过渡，复杂场景需配合脚本触发与命名分片。
+
+### 子网格（Subgrid）
+```css
+.layout { display: grid; grid-template-columns: 200px 1fr; }
+.sidebar, .content { display: grid; grid-template-rows: subgrid; grid-row: 1 / -1; }
+```
+要点：子元素继承轨道对齐和线命名，统一跨层栅格对齐。
+
+### 文本与排版增强
+```css
+/* 自动平衡标题换行 */
+h1 { text-wrap: balance; }
+
+/* 更自然的断行 */
+p { overflow-wrap: anywhere; hyphens: auto; }
+```
+更多：`text-wrap: pretty`、`text-spacing-trim`、`text-box-trim`（部分实现/实验性）。
+
+### 性能与渲染控制
+```css
+/* 跳过不可见内容布局绘制，提升长列表性能 */
+.section { content-visibility: auto; contain-intrinsic-size: 600px; }
+
+/* 组件隔离 */
+.widget { contain: content paint; }
+```
+
+### 锚点定位（Anchor Positioning）
+```css
+.trigger { anchor-name: --menu; }
+.popover {
+  position: absolute;
+  position-anchor: --menu;
+  inset-area: bottom;
+  inset: anchor(bottom center);
+}
+```
+说明：用于“贴附定位”的浮层/弹出；当前实现与兼容性仍在演进，需做降级方案。
+
+### 运动路径（Motion Path）
+```css
+.dot {
+  offset-path: path("M0,0 C 50,100 150,-100 200,0");
+  offset-distance: 0%;
+  animation: move 3s linear infinite;
+}
+@keyframes move { to { offset-distance: 100%; } }
+```
+
+### 表单与交互样式
+```css
+input[type="checkbox"] { accent-color: var(--brand); }
+input, select { appearance: auto; }
+input, textarea { field-sizing: content; }
+input[type="file"]::file-selector-button { padding: 0.5em 1em; }
+```
+
+### 顶层与遮罩
+```css
+dialog::backdrop { backdrop-filter: blur(6px) saturate(120%); }
+```
+补充：顶层（top layer）元素如 `dialog[open]`、`popover` 可通过 `::backdrop` 自定义遮罩。
+
+### 自定义属性注册（@property）
+```css
+@property --angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+.spinner {
+  --angle: 0deg;
+  transform: rotate(var(--angle));
+  transition: --angle 300ms linear; /* 可动画化 */
+}
+```
+
+### 数学与三角函数（CSS Values 4）
+```css
+.wave { transform: translateX(sin(1turn * var(--i) / 12) * 20px); }
+.scale { transform: scale(pow(1.2, var(--level))); }
+/* 还支持：cos(), tan(), asin(), acos(), atan(), atan2(), sqrt(), hypot(), log(), exp(), sign(), round() 等 */
+```
+
+### 图像与分辨率
+```css
+.hero {
+  background-image: image-set(
+    url(bg@1x.avif) 1x,
+    url(bg@2x.avif) 2x
+  );
+  image-rendering: crisp-edges; /* 像素风 */
+}
+```
+
+### 其他常用补充
+- `aspect-ratio`：内置保持宽高比；
+- 滚动吸附细节：`scroll-margin`/`scroll-padding` 已列出，配合锚点导航更稳定；
+- 自定义滚动条：Firefox `scrollbar-color/width`，Chromium `::-webkit-scrollbar*`（非标准）。

@@ -756,6 +756,10 @@
 
     3.map:
 
+new Array(m * n).fill(0);
+
+
+
 ## JavaScript 原生对象和方法
 
 ### 1. 全局对象 (Global Objects)
@@ -6152,3 +6156,6 @@ function memoize(fn) {
 
 这份文档涵盖了 JavaScript 原生对象和方法的全面内容，从基础到高级，从概念到实践，是 JavaScript 开发的完整参考手册！
         
+
+    2.this.history.length = this.cur 利用了 JS 数组的一个特性：通过直接修改 length 属性来截断数组。
+        将数组的 length 属性设置为一个比当前长度小的值时，数组会自动删除超出新长度的所有元素
