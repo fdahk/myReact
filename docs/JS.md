@@ -6159,3 +6159,81 @@ function memoize(fn) {
 
     2.this.history.length = this.cur 利用了 JS 数组的一个特性：通过直接修改 length 属性来截断数组。
         将数组的 length 属性设置为一个比当前长度小的值时，数组会自动删除超出新长度的所有元素
+
+
+
+__proto__ 和 prototype 的详细解析
+__proto__ (对象的原型链指针)
+是什么： 每个对象实例都有的属性，指向创建它的构造函数的 prototype
+作用： 用于原型链查找，实现继承
+标准写法： Object.getPrototypeOf(obj) (推荐) 或 obj.__proto__ (不推荐)
+prototype (构造函数的原型对象)
+是什么： 函数才有的属性，是一个对象
+作用： 定义通过该构造函数创建的实例的共享属性和方法
+只存在于： 函数对象上
+关系：
+Person (构造函数)
+    ├── prototype ──────┐
+    │                   │
+    │                   ▼
+    │              Person.prototype (对象)
+    │                   ├── sayHello: function
+    │                   └── constructor: Person
+    │
+    └── 通过 new 创建
+            │
+            ▼
+    john (实例对象)          jane (实例对象)
+    ├── name: 'John'         ├── name: 'Jane'
+    └── __proto__ ───────────└── __proto__ ──┐
+                                              │
+                                              ▼
+                                    Person.prototype (同一个对象)
+
+原型链：
+myCar
+  ↓ __proto__
+Car.prototype
+  ├── drive: function
+  ├── constructor: Car
+  ↓ __proto__
+Vehicle.prototype  
+  ├── move: function
+  ├── constructor: Vehicle
+  ↓ __proto__
+Object.prototype
+  ├── toString: function
+  ├── valueOf: function
+  ├── hasOwnProperty: function
+  ↓ __proto__
+null (原型链终点)
+
+总结：
+特征	__proto__	prototype
+存在于	所有对象	只有函数对象
+指向	对象的原型	构造函数的原型对象
+作用	原型链查找	定义实例的共享属性
+标准性	非标准(已废弃)	标准属性
+推荐写法	Object.getPrototypeOf()	直接使用 func.prototype
+可修改	是(不推荐)	是
+
+核心记忆要点
+prototype = 函数的属性，定义实例的共享内容
+__proto__ = 对象的属性，指向其原型，用于原型链查找
+关系： 实例.__proto__ === 构造函数.prototype
+原型链： 对象 → 原型 → 原型的原型 → ... → null
+继承原理： 通过原型链实现属性和方法的继承
+
+
+
+
+// JavaScript 允许函数接收比定义更少的参数
+function example(a, b, c) {
+    console.log(a, b, c);
+}
+
+example(1);        // 1 undefined undefined
+
+
+清理引用
+delete this.times[key];    // 清理引用
