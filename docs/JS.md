@@ -6237,3 +6237,6 @@ example(1);        // 1 undefined undefined
 
 清理引用
 delete this.times[key];    // 清理引用
+
+
+...args 剩余参数语法，arguments 不是真数组
