@@ -1354,3 +1354,99 @@ dialog::backdrop { backdrop-filter: blur(6px) saturate(120%); }
 - `aspect-ratio`：内置保持宽高比；
 - 滚动吸附细节：`scroll-margin`/`scroll-padding` 已列出，配合锚点导航更稳定；
 - 自定义滚动条：Firefox `scrollbar-color/width`，Chromium `::-webkit-scrollbar*`（非标准）。
+
+
+
+“主轴为 x（flex-direction: row）的 flex 容器宽度不会被子元素撑大”要看它是 块级 还是 行内级：
+对默认的块级 flex（display: flex）来说，width: auto 会先取父容器的可用宽度，所以看起来不会被子元素“撑大”；子元素空间不够就挤压/换行/溢出。
+但如果是 display: inline-flex（或父元素本身宽度不固定），容器的实际宽度仍然可能跟着子元素的内容变化。
+高度方面，无论 flex 方向如何，容器在未指定 height 时都是由子元素决定的（默认 align-items: stretch 时还会让子元素高度跟着容器走）。
+
+因为 scroll-view 里的内容会按“行内流”来排布。当你把容器设成 white-space: nowrap 时，它会让这一行的文本和行内元素禁止自动换行；再把每个卡片改成 display: inline-block，它们就和“文字”一样在同一行顺次排列。这样一来，容器本身不够宽就会出现横向溢出，scroll-view 的横向滚动就能生效，形成连续横排的滑动效果。换句话说：nowrap 负责阻止换行，inline-block 让元素参与行内排版，两者结合就能在不依赖 flex 的前提下实现横向列表。
+
+Post 的根节点确实写了 width: 100%，但它所在的 .content-body 被你设置成了 display: flex; flex-direction: column; align-items: center;。在列方向的 flex 容器里，交叉轴（横向）的对齐由 align-items 控制：当是 center 时，子项会按照自身内容宽度居中显示，不会被“拉伸”到跟父容器一样宽，所以看起来没占满。
+改法任选其一即可：
+把 .content-body 的 align-items 改成 stretch（默认值）或 flex-start；
+或者只给帖子单独拉满：.content-body :deep(.post-wrapper) { align-self: stretch; } / width: 100%（配合 align-self: stretch 更稳）。
+这样帖子就能撑满父容器的横向宽度了。
+
+box-sizing 的默认值是 content-box。在这个模式下，width/height 只计算内容区，额外的 padding、border 会把盒子撑得更大。
+box-sizing: border-box 会把 padding 和 border 都算进宽高里，也就是说，设置成 width: 200px 后，无论内边距/边框是多少，盒子的总宽仍然是 200px；内部内容区会按剩余空间自动压缩。这样在做自适应布局时更省心，所以很多项目会全局切到 border-box。
+
+这两个 text 被分成两行，是因为它们的父节点 .post-header-title 写了 display: flex; flex-direction: column;。在列方向的 flex 容器中，子项会按“从上到下”一行一个地排列，而且默认 align-items: stretch，所以每个子项会被拉满父容器宽度，看起来就像各自占了一整行。
+
+uv-icon 的 color="#3D3D3D" 会直接生成内联样式，优先级比类选择器高，所以即使绑定了 active，颜色仍然按内联样式显示
+
+百分比高度必须向上层逐级“有确定高度”才能成立。你给 scroll-view 写了 height: 100%，要想生效，它的父级（.body）、再往上的祖先都得有明确的 height。
+用 height: 100vh 时，.page 的高度是确定的，.body 的 flex: 1 能算出具体像素，scroll-view 的 height: 100% 也就成立，从而只滚动内容区。
+换成 max-height: 100vh 后，.page 的高度不再固定，而是“内容多少就多高，但不超过 100vh”。这种情况下它不算“确定高度”，子元素的百分比高度会被当成 auto，scroll-view 实际高度随内容增长，滚动就失效了。
+要既限制上限又保留滚动效果，可以写成 height: 100vh; max-height: 100vh;，或者保持 height: 100vh，再配合 min-height 控底线。
+
+overflow实际上描述内容和滚动条的显示
+
+line-height: 1 表示行高等于字体大小的 1 倍（即 100%），所以行框高度恰好包住文字本身，没有额外的上下空间。这比默认值（一般 1.2～1.5）更紧凑，常用来做视觉上“贴着内容”的标签或按钮；如果是多行文本，就会显得有点拥挤。
+
+z-index 不会继承父级。只有在元素设了“定位”（position 不是 static）之后，没写 z-index 才会使用默认值 auto，它会跟父元素处在同一个层叠上下文里，既不是固定的 0，也不是继承父级的具体数值。当你在元素上显式写 z-index（比如 5 或 -1），它就会在所属层叠上下文中按数值大小排序；如果父元素本身创建了新的层叠上下文，那子元素的 z-index 只能在这个局部生效，无法跨上下文去压过外部元素。判断某个元素是否创建了独立的层叠上下文（stacking context），看它或它的祖先是否触发了“建立新层叠上下文”的条件。常见触发条件如下：
+根元素（html 或小程序页面顶层）天然就是一个层叠上下文。
+任何设置了定位（position: relative/absolute/fixed/sticky）并且 z-index 不是 auto 的元素。
+opacity 小于 1。
+transform 不是 none（例如 translate/scale/rotate）。
+filter、backdrop-filter、perspective、clip-path、mask/mask-image、mix-blend-mode 等不为默认值。
+isolation: isolate。
+will-change 声明了上面这些属性（浏览器会提前创建上下文）。
+某些特定的 CSS 属性值（如 contain、overscroll-behavior 等也可能触发）。
+在 Flex/Grid 容器中，子元素如果 z-index 不是 auto 同样会单独形成层叠上下文。
+判断方法：
+浏览 CSS：检查元素及其祖先是否满足以上条件。
+调试工具：浏览器 DevTools（Chrome、Edge 等）里选中元素，查看 Layout/Computed 面板，通常会显示它所属的 stacking context；或者在“层叠上下文”视图里直接看到哪些元素建立了新的上下文。
+观察 z-index 行为：若子元素设置很大的 z-index 仍压不过兄弟节点，通常是因为它被限制在自己的层叠上下文里，这也是一个侧面判断。
+掌握谁创建了层叠上下文，就能理解为什么某些元素“压不住”别人，也就能有针对性地调整（例如移动元素、拆掉多余的 transform、把 z-index 设置到正确的上下文里等）。
+
+
+当前 .pageBackground 是 position: absolute，却缺少父层的参考坐标系（.page 没设 position: relative），并且其它模块也全写了 z-index: 2。这样既难以维护，又容易出现背景反而在上面、内容被遮挡的现象。  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    height: 50vh;
+    background: linear-gradient(180deg, #E4C48D 0%, #fff 100%);
+    z-index: 0;
+  }更好
+
+
+inset: 0; 是一个速写，相当于同时写 top: 0; right: 0; bottom: 0; left: 0;。常用在绝对定位或固定定位元素上，让它四个方向都贴紧父元素的边界。
+z-index: 0; 明确把当前层叠上下文里的层级设为 0；如果不写（默认 auto），它会跟父节点处于同一层叠顺序，通常跟兄弟元素比大小时处在“默认层级”。当父元素或元素本身创建了新的层叠上下文时，显式写 0 可以保证它在这个上下文里正好处于最底层（但仍在上一个上下文的范围里），避免 auto 情况下因层级不确定导致遮挡问题。
+
+
+是的。浏览器里文档的根元素（html）默认就是第一个层叠上下文；在小程序或 uni-app 的页面里，顶层的页面容器同样会作为根层叠上下文存在。也就是说，即使你没写 position、z-index，最外层节点依然天然充当“基准层级”，后续的层叠顺序都是在它这个上下文里再分层。根元素实际上没有一个具体的 “数值” z-index。它的 z-index 默认为 auto，但因为它是最外层的层叠上下文，对它本身来说并不存在跟其他兄弟元素比较层级的场景，所以你可以把它理解成“无需设置的基准层”。所有后续的 z-index 计算都是在它这个上下文里继续层叠的。层叠顺序并不一定需要具体的数值 z-index 才能决定。浏览器遵循一套固定的优先规则：
+层叠上下文：页面顶层（根元素）默认就是第一个层叠上下文。每个层叠上下文内部会整体参与上一层的排序。
+在同一个层叠上下文里，按以下顺序叠放（由底到顶）：
+背景和边框；
+z-index < 0 的定位元素；
+普通块级/行内内容（包括 z-index: auto 或没有 position 的元素）；
+z-index >= 0 的定位元素（数值越大越靠上，相同数值的按照 DOM 顺序后来的在上面）。
+因为根元素本身没有兄弟元素，它所在的上下文就只有自己，所以不用实际比较数值。“没有 z-index 的普通文档流”遵循上面第三点的规则：同级元素之间按照 DOM 顺序依次渲染，后面的覆盖在前面的上面。当你引入 position + 非 auto 的 z-index 时，才会跳到最后一步，以数值和 DOM 顺序决定谁在上面。
+换句话说，z-index 只是其中一个参与排序的维度；没有它时，浏览器仍然能根据默认规则（来源顺序、是否定位等）确定叠放关系
+.section-title 仍然是默认的 position: static，这时写 z-index 会被当成 auto 忽略掉（除非它是 flex/grid 子项，或者本身通过其它属性先创建了层叠上下文）。pageBackground 是定位元素，z-index: 0 会把它放到一个独立层级；而 .section-title 还是普通文档流元素，所以层叠顺序依旧按默认规则走，自然没法“盖”在背景之上。
+
+
+伪元素会被当成元素的“内部子节点”来看待：
+::before 按顺序插在真实内容之前，相当于在元素打开标签后立刻放进一个子节点再渲染。
+它默认的层叠顺序遵循普通文档流：先渲染 ::before，再渲染元素内容，最后是 ::after。如果没设置定位，渲染顺序就是 ::before → 内容 → ::after。
+一旦给伪元素加了定位（如 position: absolute）并且配上 z-index，它就会在当前层叠上下文里按 z-index 的规则排序（同级别数值大的在上面，数值相同按先后顺序）。
+所以你现在的 ::before 会被插在 .page 的内容之前，但它用了 position: absolute 而 .page 没有 position，它会相对最近的定位祖先（页面根节点）定位，看起来像覆盖在内容上。为了让内容在视觉上盖住背景，通常做法是：
+
+text 组件是内联元素，line-height: 1 会把该行的行高压到等于字体大小，也就是整条基线的可用高度只有 32rpx。上下 padding 虽然仍在盒模型里，但内联盒的高度不会随之扩大，所以看上去“被吃掉”——背景色会紧贴文字，留不出额内距。要让上下留出空间，还是得让标签变成 inline-block / inline-flex 等能撑开的盒子，并放松 line-height，padding 才能真正发挥作用
+
+
+box-shadow 的语法是 box-shadow: offset-x offset-y blur spread color inset;，每个参数含义如下：
+offset-x：阴影在水平方向的偏移量，正值往右，负值往左；
+offset-y：阴影在垂直方向的偏移量，正值往下，负值往上；
+blur：模糊半径，越大越虚；为 0 时边缘锐利；
+spread：扩散半径，正值让阴影向外扩张，负值向内收缩；
+color：阴影颜色，默认取元素的 color（不指定时易出现看不见的情况）；
+inset（可选关键字）：加上后阴影变为内阴影，从元素内部向里投射
+
+
+scroll-view 写了 height: 100%，但它的父容器 .body 没有一个可用于百分比计算的“确定高度”——.body 只是 flex: 1，在 App/小程序端编译后常常算不到具体像素，于是 scroll-view 被判定为 0 高度，自然无法滚动。flex: 1 并不等同于有一个 “可供百分比继承” 的确定高度。它只是告诉父容器按剩余空间分配，真实像素是在布局过程中动态计算出来的；对 scroll-view 这种组件而言，它仍然看不到一个可用的父级高度去套 height: 100%，所以最终高度会退化成 0。你把子级改成 flex: 1（让父子一起参与 flex 布局）或直接给子级写固定/计算后的高度，才能让滚动区域真正得到尺寸。
+注意：flex: 1 给 view 用是会生效的，但 scroll-view 本身在小程序/UniApp 里不把 flex 当高度；它仍然需要显式的尺寸才能滚动。
+之前讨论的 communitySection 里，.body 虽然也是 flex: 1，但在 H5/小程序渲染时还要叠加额外的安全区、导航栏等计算；如果上层没有把整个链条的高度“锁死”，scroll-view 的百分比就会落空，表现就是不滚动。因此关键不是 flex1 本身没作用，而是要保证整条父子链上某一层提供了明确的大小。这个页面恰好满足，所以能滚动。即flex1的上层元素没有再嵌套flex1，只有一层 flex 时能滚，是因为 scroll-view 的父节点在这一层就已经拿到了具体高度；一旦嵌套两层 flex: 1，第二层（scroll-view 的直接父元素）虽然在语义上“占满剩余空间”，但它自己并没有一个可用于百分比继承的明确高度，导致内部的 height: 100% 失效，scroll-view 得不到尺寸，自然不能滚动。
