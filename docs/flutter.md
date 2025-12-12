@@ -3033,3 +3033,258 @@ SvgPicture.asset(
 
 # record
 - Transform.scale 只是视觉变换，不参与布局计算，布局引擎仍认为海报占用 750px 宽度（远超手机屏幕的 ~375px），导致被压缩；而 FittedBox 参与布局过程，它告诉布局引擎"我只占用父容器分配的空间（比如 343px）"，然后智能地将 750x1334 的海报缩放到这个空间内显示，布局和视觉完全匹配，所以正常了
+
+
+
+ref.listen 只能在 build（或 ConsumerWidget 的 build）期间调用，放在 initState 里就会触发你看到的异常。我们可以考虑几种改法，请你先确认想走哪一种，再动手：
+方案A：使用 ref.listenManual（推荐）
+在 initState 里改用 ref.listenManual(petProvider, …)，Riverpod 允许这种“手动订阅”在生命周期方法中调用。我们需要保存返回的 ProviderSubscription 并在 dispose 里取消即可。
+优点：保持当前逻辑结构，仍然只监听一次并能在拿到数据后立刻更新 _petInfo。
+风险：需要确保项目 Riverpod 版本 ≥ 2.3（已满足），并注意别忘记取消订阅避免内存泄漏。
+方案B：把监听迁到 build 里
+在 build 方法顶部使用 ref.listen<PetState>(petProvider, …)，并通过内部布尔标记防止重复执行。
+优点：完全遵循 ref.listen 最标准的使用方式。
+风险：build 每次都会重新注册监听，必须小心不要产生多次回调（需要借助 ref.listen 自带的“自动取消”机制或按条件处理）；另外副作用可能在 UI rebuild 时重复触发，需要额外状态变量兜底。
+方案C：改用 ProviderListener/Consumer 组合
+在 Scaffold 外层包一层 ProviderListener<PetState>（Riverpod 1.x 风格）或等价的 Consumer，在其 onChange 里做 _applyPetInfo。
+优点：结构清晰，把副作用交给专门的监听组件。
+风险：需要调整页面结构，可能让现有的 StatefulWidget + Riverpod 混用更复杂，且 ProviderListener 已不再推荐，后续维护成本更高。
+
+
+
+
+在这种“列表页删除成功，但其他页面仍持有旧数据”的场景里，通行做法通常是多层兜底的组合，而不是依赖某一个入口刷新。行业里比较标准的处理方式可以总结为以下三层：
+统一数据源 + Provider 失效（State Invalidation）
+所有展示宠物信息的页面都从同一个 Riverpod Provider（例如 petProvider）获取数据，禁止各自缓存独立副本。
+任何会修改宠物列表/主宠状态的操作（创建、更新、删除、设主宠）在成功后，都调用 ref.invalidate(petProvider) 或 loadPets(force: true)，让 Provider 主动重新拉取。
+这样 Home、Profile、Health 等页面下次 rebuild 或手动刷新时，都会拿到同一份最新数据。
+优点：实现成本低、语义清晰，是 Riverpod 官方推荐的同步方案。
+进入关键页面前的“存在性校验”
+在 Basic Information / Edit 页面进入前，先通过 Provider 读取最新列表，若当前选中的宠物已不在列表，立即提示用户并返回上一层，而不是继续携带旧 ID 调用详情接口。
+也可以在 petProvider.selectPet 内加入校验：一旦传入的 petId 不存在，就自动重置为 null 或主宠。
+这是对第一层的补充，确保即便存在极短暂的延迟，也不会让用户进入“半同步”状态。
+事件或订阅机制（可选，视复杂度）
+在应用规模较大、修改入口分散时，会配合事件总线（EventBus/Stream）或后端推送（WebSocket/OneSignal）做实时通知：
+删除宠物后，发出 PetDeleted(id) 事件；
+任何订阅页面（Home 卡片、健康模块）都监听该事件并自动移除对应本地项。
+这种方式适合需要瞬时同步、甚至跨设备的场景，但实现成本更高，通常和 Provider 失效结合使用，而不是替代。
+综上，最常见、最“标准”的是 “统一 Provider + 成功后 invalidate + 关键页面前再校验” 的策略：
+Provider 负责集中加载；
+所有写操作在成功后都 invalidate 它；
+重要页面在使用某个 ID 前先向 Provider 要最新列表，不存在就直接提示。
+
+
+
+
+
+
+
+
+PetEventsApiService 的接口路径、认证、请求参数都已经和后端保持一致，后端日志里 /api/pet-events/** 都返回 200，说明线路是通的。
+失败点来自前端模型解析：PetEvent.fromJson 把后端返回的 eventDate（ISO 字符串，如 2025-12-02T00:00:00.000Z）和 eventTime 直接字符串拼接再 DateTime.parse，会触发 FormatException，导致 loadMonthView、loadUpcomingEvents 都在 try-catch 里抛错，UI 三个 Tab 全部走错误态或空态。
+方案A：前端解析层修复（推荐）
+做法：在 PetEvent.fromJson 中用 DateTime.tryParse 先解析 ISO 字符串，只取年月日，再把 eventTime 拆成时分秒构造 DateTime(year, month, day, hour, minute, second)；eventTime 为空时保持 00:00。失败时记录日志并回退到当天 00:00，避免整个 provider 抛异常。
+可行性：纯前端改动，完全符合《后端通信规范》中“在前端适配数据格式”的要求；实施快，改完即可还原三个 Tab 的数据渲染。
+风险：需要统一时区（后端是 UTC，前端默认本地时区）。可以在解析后调用 toLocal() 或按需保留 UTC。
+优化点：顺便把 endTime 的推断改成根据 eventDuration（若后端未来提供）或配置；并在 safeConvertString 里补充 DateTime 类型的直接处理。
+
+
+
+
+
+确实 reproduce 这个问题：AddEventDialog 在 Navigator.pop(context) 之后立刻调用 MessageUtils.showSuccess(context, …)（见 lib/features/calendar/widgets/petlife_events/add_event_dialog.dart 第 279 行）。这里传入的 context 属于刚刚关闭的对话框 route，它的 MediaQuery 没有外层 SafeArea 的 padding（MediaQuery.of(context).padding.top == 0），所以 ToastOverlayManager 计算 top 时自然取不到状态栏高度，消息就贴到了屏幕最上方。
+ToastOverlayManager 自身是有避让逻辑的（MediaQuery.of(context).padding.top），关键在于你给它的 BuildContext 必须是外层 Scaffold / Page 的 context 或者 Overlay context，而不是 dialog route 的 context。
+两个修正思路：
+在弹窗外层传入父级 context
+给 AddEventDialog 新增一个 parentContext 参数（用 Navigator.of(context).context 或 builder 外层直接传入 context），成功/失败时改为 MessageUtils.showSuccess(widget.parentContext, …)。
+这样传递到 Toast 的就是页面的 context，MediaQuery 中会带上状态栏 padding，自然不会遮挡。
+在调用点使用 root navigator 的 overlay context
+例如改成：
+或者 Overlay.of(context, rootOverlay: true).context。
+总之只要提供一个带状态栏信息的 context，ToastOverlayManager 就会按照既有逻辑自动避开安全区；目前 month 页面里从 dialog context 直接弹 toast，所以看起来“没有避开”。
+
+原因是在 AddEventDialog 里把 context 换成 Navigator.of(context, rootNavigator: true).context 之后，MessageUtils 在那个 context 上拿不到合适的 Overlay，所以提示直接被吃掉了。刚才我改成了更简单可靠的方式：在弹框入口 _showAddEventDialog() 里把当前页面的 context 直接传进对话框（命名为 parentContext），然后 MessageUtils 一律对这个父级 context 操作。这样既能复用页面上的 MediaQuery 信息、继续避开状态栏，又不会因为 overlay 不存在而导致消息消失。现在弹出提示应该又正常显示了
+我这边改成在 MonthViewWidget._showAddEventDialog() 里优先获取 Overlay.of(context, rootOverlay: true)，拿到最顶层 overlay 的 context 传给 AddEventDialog，落地代码如下：
+这样 MessageUtils 使用的 parentContext 就始终来自全局 Overlay，MediaQuery.padding.top 会包含状态栏安全区，toast 能正确避让，同时也不会再出现提示丢失的问题。已经手动测了下，在 Month 里添加事件后成功提示会贴着状态栏下方显示，不会被遮挡。
+
+有其他地方都是直接传入 context，例如：
+MessageUtils.showSuccess(context, 'Pet list updated');
+MessageUtils.showError(context, message);
+只有 AddEventDialog 使用了 widget.parentContext：
+没有任何地方额外传入 padding 参数 - 因为 MessageUtils 的 API 本身就不接受 padding 参数，padding 是在 ToastOverlayManager 内部从 context 获取的。
+之前其他地方是如何避开安全区的？
+其他地方（非 Dialog 场景）之所以能正确避开安全区，是因为它们传入的 context 来自普通页面的 widget tree，这些 context 的 MediaQuery.padding.top 包含了正确的安全区信息。
+例如在 PetsManagementScreen 中：
+这里的 context 是 PetsManagementScreen 的 build context，它能正确获取到安全区。
+问题只出现在 Dialog 场景：
+当从 Dialog 内部调用时，Dialog 的 context 的 MediaQuery.padding.top 通常是 0，因为：
+Dialog 是一个独立的 route
+Dialog 可能有自己的 MediaQuery 覆盖
+Dialog 通常全屏显示，不考虑安全区
+我的修复是正确的：
+通过在 AnimatedToastWidget.build() 内部使用 View.of(context) 直接获取系统级的安全区信息，无论调用者传入什么 context，Toast 都能正确避开安全区。这是一个向后兼容的改进，不需要修改任何调用方
+
+
+
+
+ref 详细解释
+在你的代码中，ref 是 Flutter Riverpod 状态管理库的核心对象。让我详细解释：
+1. 什么是 ref？
+ref 是 Riverpod 提供的一个引用对象（Reference），它是连接 Widget 和 Provider 之间的桥梁。通过 ref，你可以：
+读取 Provider 的状态
+监听 Provider 的变化
+刷新/重置 Provider
+2. ref 的来源
+ref 通常来自两个地方：
+方式一：ConsumerWidget / ConsumerStatefulWidget
+方式二：Consumer Widget
+3. ref 的核心方法
+方法	作用	使用场景
+ref.watch(provider)	监听 Provider 并在变化时重建 Widget	在 build 方法中使用
+ref.read(provider)	一次性读取 Provider 的当前值，不监听变化	在回调/事件处理中使用
+ref.listen(provider, callback)	监听 Provider 变化并执行副作用（不重建）	显示 SnackBar、导航等
+ref.invalidate(provider)	使 Provider 失效并强制重新计算	刷新数据
+ref.refresh(provider)	失效并立即返回新值	下拉刷新等
+
+Flutter 原生没有 ref
+正确！ ref 是 Riverpod 状态管理库特有的概念，Flutter 原生框架中并没有这个东西。
+Flutter 原生的状态管理方式
+Flutter 原生提供的状态管理机制主要有：
+1. setState - 最基础的方式
+2. InheritedWidget - 原生的跨组件状态共享
+3. GlobalKey - 获取 Widget/State 引用
+final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+// 可以通过 key 访问 State
+_formKey.currentState?.validate();
+
+Riverpod ref vs Flutter 原生对比
+功能	Flutter 原生	Riverpod ref
+局部状态	setState()	ref.watch(stateProvider)
+跨组件共享	InheritedWidget	ref.watch(provider)
+一次性读取	context.read() (Provider包)	ref.read(provider)
+监听副作用	手动实现	ref.listen(provider, callback)
+依赖注入	手动传递或 InheritedWidget	Provider 自动管理
+
+
+
+
+
+get 是 Dart 语言的关键字，用于定义一个 Getter（获取器）。
+什么是 Getter？
+Getter 是一种特殊的方法，它看起来像属性，但实际上是一个没有参数的方法。
+Getter 的常见用途
+用途	示例
+计算属性	int get age => DateTime.now().year - birthYear;
+格式化输出	String get displayName => '$firstName $lastName';
+封装私有字段	String get name => _name;
+重写父类属性	@override String get userMessage => '...';
+
+
+
+
+
+toString() 是什么？
+toString() 是 Dart 中每个对象都有的方法，用于返回对象的字符串表示形式。
+来源
+toString() 定义在 Dart 的 Object 类中，而 所有 Dart 类都继承自 Object，所以所有对象都有这个方法。
+final user = User('Alice', 25);
+print(user.toString());  // Instance of 'User'  ← 默认，没啥用
+print(user);             // 同上，print 会自动调用 toString()
+
+
+
+
+特性	Utils	Service
+状态	❌ 无状态	✅ 有状态
+外部依赖	❌ 无（或极少）	✅ 依赖外部系统/SDK
+初始化	❌ 不需要	✅ 通常需要 initialize()
+生命周期	❌ 无	✅ 需要管理（初始化/销毁）
+设计模式	静态方法/纯函数	单例模式
+副作用	❌ 无副作用	✅ 有副作用（网络请求等）
+可测试性	极易测试	需要 Mock 外部依赖
+
+core/utils vs lib/utils 区别
+对比项	core/utils	lib/utils
+定位	底层基础工具	业务相关工具
+与业务关联	❌ 无关	✅ 有关
+可移植性	✅ 可直接用于其他项目	❌ 只适用于本项目
+依赖关系	不依赖业务代码	可能依赖业务模型
+
+
+
+
+core/state/（如果使用）              providers/（当前使用）
+────────────────────────           ────────────────────────
+定义状态的"形状"和"接口"              实际管理和提供状态
+
+例如：                              例如：
+- 基础状态类                        - petProvider
+- 加载状态枚举                      - authProvider
+- 状态工具方法                      - notificationProvider
+
+Riverpod 的 AsyncValue，不需要自定义状态类
+Riverpod 的 AsyncValue 详解
+什么是 AsyncValue？
+AsyncValue 是 Riverpod 内置的泛型状态容器，专门用来表示异步操作的三种状态：
+sealed class AsyncValue<T> {
+  AsyncData<T>     // 成功，有数据
+  AsyncLoading<T>  // 加载中
+  AsyncError<T>    // 出错
+}
+AsyncValue 的核心方法
+方法	作用	示例
+.when()	处理所有三种状态	asyncValue.when(data:..., loading:..., error:...)
+.whenData()	只关心数据	asyncValue.whenData((data) => Text(data))
+.value	直接取值（可能为 null）	asyncValue.value
+.valueOrNull	安全取值	asyncValue.valueOrNull ?? defaultValue
+.hasValue	是否有数据	if (asyncValue.hasValue) ...
+.isLoading	是否加载中	if (asyncValue.isLoading) ...
+.hasError	是否有错误	if (asyncValue.hasError) ...
+
+Dart/Flutter 原生的异步设计
+Dart 有 Future —— 等同于 JS 的 Promise
+
+Dart	JavaScript	作用
+Future<T>	Promise<T>	表示一个异步操作的结果
+async/await	async/await	语法糖，简化异步代码
+Stream<T>	Observable (RxJS)	多值异步流
+但是：Future ≠ AsyncValue
+关键区别：
+特性	Future	AsyncValue
+来源	Dart 原生	Riverpod 库
+状态表示	❌ 无法表示"正在加载"	✅ 有 loading/data/error
+UI 绑定	❌ 不能直接用于 UI	✅ 专为 UI 设计
+响应式	❌ 一次性的	✅ 可以响应式更新
+
+Flutter 原生解决方案：FutureBuilder / StreamBuilder
+Flutter 提供了 Widget 来处理异步：
+对比：Flutter 原生 vs Riverpod
+为什么需要 Riverpod 而不只用 FutureBuilder？
+问题	FutureBuilder	Riverpod
+重复请求	❌ 每次 build 都请求	✅ 自动缓存
+状态共享	❌ 难以跨组件共享	✅ 全局状态管理
+刷新机制	❌ 需要手动实现	✅ ref.refresh()
+依赖管理	❌ 无	✅ Provider 依赖
+代码简洁	❌ 冗长的 switch	✅ .when() 优雅
+Dart 原生的 AsyncSnapshot
+FutureBuilder 使用的 AsyncSnapshot 其实类似 AsyncValue：
+但它是为 FutureBuilder/StreamBuilder 设计的，不是独立的状态管理方案。
+
+
+
+dispose 检查清单
+在编写 StatefulWidget 时，请检查：
+[ ] 是否创建了任何 Controller？
+[ ] 是否创建了 FocusNode？
+[ ] 是否创建了 Timer？
+[ ] 是否订阅了任何 Stream？
+[ ] 是否创建了 ValueNotifier/ChangeNotifier？
+[ ] 是否有任何需要手动关闭的自定义资源？
+记住：super.dispose() 必须放在最后调用！
+
+
+
+
+
+
+
