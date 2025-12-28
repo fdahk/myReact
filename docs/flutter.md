@@ -3288,3 +3288,96 @@ dispose 检查清单
 
 
 
+反射（Reflection）
+反射是一种程序在运行时检查、访问和修改自身结构和行为的能力。通过反射，程序可以：
+在运行时获取类的信息（类名、方法、属性等）
+动态创建对象实例
+动态调用方法
+动态访问和修改属性
+通俗理解
+想象你有一个黑盒子（对象），正常情况下你只能按照说明书（接口）来使用它。但有了反射，你就像拥有了X光眼，可以：
+看到盒子里有什么零件（属性）
+知道盒子能做什么（方法）
+甚至在不知道盒子型号的情况下操作它
+
+
+
+
+## Element 与 createElement
+
+### Flutter 三棵树
+```
+Widget Tree      →  配置信息，不可变，轻量
+      ↓
+Element Tree     →  桥梁，管理生命周期，可复用
+      ↓
+RenderObject Tree →  实际渲染，布局计算
+```
+
+### 核心概念
+- **Widget**：蓝图（描述"是什么"）
+- **Element**：施工队（负责"怎么建"）- Widget 在树中的实例
+- **RenderObject**：建筑物（真正"看得见"）
+
+### createElement 方法
+每个 Widget 必须实现，用于创建对应的 Element：
+```dart
+// StatelessWidget
+StatelessElement createElement() => StatelessElement(this);
+
+// StatefulWidget  
+StatefulElement createElement() => StatefulElement(this);
+```
+
+### Element 类型
+```
+Element
+├── ComponentElement（组合型，无 RenderObject）
+│   ├── StatelessElement
+│   ├── StatefulElement
+│   └── ProxyElement（InheritedWidget）
+└── RenderObjectElement（渲染型，有 RenderObject）
+```
+
+### 关键点
+1. **BuildContext 就是 Element**
+   ```dart
+   abstract class Element implements BuildContext { }
+   ```
+
+2. **State 保存在 Element 中**（Widget 重建但 State 保持的原因）
+
+3. **复用判断 canUpdate**
+   ```dart
+   // runtimeType 和 key 都相同才复用
+   oldWidget.runtimeType == newWidget.runtimeType && oldWidget.key == newWidget.key
+   ```
+
+4. **生命周期**：`mount` → `update` → `deactivate` → `unmount`
+
+### 更新流程
+```
+setState() → Element 标记 dirty → rebuild → 
+比较新旧 Widget → 可复用则 update，否则创建新 Element
+
+
+: 冒号 - 初始化列表
+冒号后面是初始化列表（initializer list）
+在构造函数体执行之前运行
+常用于：调用父类构造函数、初始化 final 字段
+5. super(key: key) - 调用父类构造函数
+super 指向父类（通常是 StatelessWidget 或 StatefulWidget）
+将接收到的 key 参数传递给父类的构造函数
+父类需要这个 key 来进行 Widget 的身份识别和重建优化
+
+
+
+assert（断言）
+assert 是 Dart 中的调试断言语句，用于在开发阶段检查某个条件是否为 true：
+条件为 true → 继续执行
+条件为 false → 抛出 AssertionError，程序中断
+基本语法
+// 基本形式assert(condition);// 带错误信息assert(condition, '错误提示信息');
+仅 Debug 模式生效	Release 模式下 assert 会被完全移除
+零性能损耗	生产环境不执行，不影响性能
+开发辅助工具	帮助尽早发现 bug

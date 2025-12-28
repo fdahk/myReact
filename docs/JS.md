@@ -6240,3 +6240,14 @@ delete this.times[key];    // 清理引用
 
 
 ...args 剩余参数语法，arguments 不是真数组
+
+
+
+
+JS的基本类型可以使用属性方法，是因为有自动类型包装机制
+
+
+const requestBody = {
+  carrier: data.carrier,  // ← undefined 时会被JSON序列化自动忽略
+  // 其他字段...
+};
