@@ -3381,3 +3381,231 @@ assert 是 Dart 中的调试断言语句，用于在开发阶段检查某个条�
 仅 Debug 模式生效	Release 模式下 assert 会被完全移除
 零性能损耗	生产环境不执行，不影响性能
 开发辅助工具	帮助尽早发现 bug
+
+
+
+SaleDialogUtils.show(context) 使用 Flutter 内置的 showDialog 方法来显示弹窗。原理如下：
+弹窗挂载原理
+工作流程
+showDialog 使用传入的 context 找到最近的 Navigator（通常是 MaterialApp 或 CupertinoApp 提供的根 Navigator）
+创建 Overlay 条目 - Dialog 被添加到 Overlay widget 中，Overlay 是一个独立的层叠在整个应用之上
+不是挂载到 Home 页面 - 弹窗实际上是挂载到应用的 根 Overlay，而不是当前页面。这就是为什么弹窗可以覆盖整个屏幕并显示在所有页面之上
+Context 的作用 - 传入的 context 只是用来：
+找到 Navigator
+继承主题样式（如 Theme.of(context)）
+获取 MediaQuery 等信息
+图示
+MaterialApp  └── Navigator (根 Navigator)        └── Overlay (弹窗挂载层)              ├── 当前路由页面 (Home)              └── Dialog (弹窗) ← showDialog 添加到这里
+所以无论从 Home 页面还是 AI 功能页面调用 SaleDialogUtils.show(context)，弹窗都会显示在整个应用的最上层，覆盖所有内容。
+
+
+
+
+Flutter 中常见的类似类型别名
+类型别名	定义	用途
+ValueChanged<T>	void Function(T value)	值变化回调
+VoidCallback	void Function()	无参数回调
+ValueGetter<T>	T Function()	获取值
+ValueSetter<T>	void Function(T value)	设置值（与 ValueChanged 相同）
+
+
+
+
+Color.lerp 详细解释
+final backgroundColor = Color.lerp(  const Color(0xFFF1EEF0),  // 起始颜色（灰色背景）  Colors.white,              // 结束颜色（白色）  1 - opacity,               // 插值比例 (0.0 ~ 1.0))!;
+1. Color.lerp 是什么？
+lerp = Linear interpolation（线性插值）
+它在两个颜色之间根据比例混合，生成一个新颜色。
+Color.lerp(颜色A, 颜色B, t)
+t = 0.0 → 返回颜色A
+t = 0.5 → 返回A和B的中间色
+t = 1.0 → 返回颜色B
+2. 这段代码的作用
+// opacity 值（根据位置计算）// 中间位置: opacity = 1.0// 边缘位置: opacity = 0.4final backgroundColor = Color.lerp(  const Color(0xFFF1EEF0),  // 灰色  Colors.white,              // 白色  1 - opacity,               // 当 opacity=1.0 时，t=0，返回灰色                             // 当 opacity=0.4 时，t=0.6，接近白色)!;
+
+
+
+
+找到问题了！你的代理设置不完整：
+设置项	当前状态
+http_proxy 环境变量	❌ 未设置
+https_proxy 环境变量	❌ 未设置
+Git http.proxy	✅ http://127.0.0.1:7897
+Git https.proxy	❌ 未设置
+CocoaPods 的 curl 需要读取环境变量，而不是 Git 配置。所以下载很慢。
+echo '' >> ~/.zshrc && echo '# Proxy settings for curl/wget/pod' >> ~/.zshrc && echo 'export http_proxy=http://127.0.0.1:7897' >> ~/.zshrc && echo 'export https_proxy=http://127.0.0.1:7897' >> ~/.zshrc && echo 'export ALL_PROXY=http://127.0.0.1:7897' >> ~/.zshrc && echo "已添加到 ~/.zshrc"
+已添加到 ~/.zshrc
+
+
+
+
+
+# GIF 转透明背景 APNG 工作流程文档
+
+## 📋 背景
+
+项目需要将宠物动画的白色背景变成透明背景，以便在 Flutter 应用中显示更好的视觉效果。
+
+---
+
+## 🔄 尝试过程
+
+### 第一次尝试：直接使用 APNG 格式
+
+**问题**：原以为 APNG 格式本身支持透明，但实际上只是格式支持透明通道，**原始素材如果是白色背景，转换后依然是白色背景**。
+
+```bash
+# 简单转换（不处理背景）
+ffmpeg -i input.gif -plays 0 output.apng
+```
+
+**结果**：❌ 背景仍然是白色
+
+---
+
+### 第二次尝试：ffmpeg 色键抠图 (chromakey/colorkey)
+
+**方法**：使用 ffmpeg 的 chromakey 或 colorkey 滤镜自动将白色变透明
+
+```bash
+# chromakey 方式
+ffmpeg -y -i run.gif -vf "chromakey=white:0.1:0.2,format=rgba" -plays 0 run.apng
+
+# colorkey 方式
+ffmpeg -y -i run.gif -vf "colorkey=white:0.01:0.1,format=rgba" -plays 0 run.apng
+```
+
+**结果**：❌ 效果很差
+- 参数太激进：整个图片变透明（看不到任何内容）
+- 参数太保守：背景去除不干净
+- 宠物身上的白色部分也被误删
+
+**原因**：色键抠图是基于颜色的简单算法，无法处理：
+- 宠物身上的白色毛发
+- 背景的渐变/阴影
+- 边缘的抗锯齿像素
+
+---
+
+### 第三次尝试（成功）：rembg AI 去背景
+
+**发现**：同事的序列帧效果很好，是因为使用了专业的 AI 去背景工具处理每一帧。
+
+**工具**：[rembg](https://github.com/danielgatis/rembg) - 基于 U2Net 深度学习模型的背景去除工具
+
+---
+
+## ✅ 最终正确的工作流程
+
+### 步骤 1：安装 Python 3.11
+
+rembg 依赖的 `onnxruntime` 不支持 Python 3.14，需要使用 3.11 版本：
+
+```bash
+brew install python@3.11
+```
+
+### 步骤 2：创建虚拟环境
+
+```bash
+cd /Users/mac/Desktop/paaawow_front
+/opt/homebrew/opt/python@3.11/bin/python3.11 -m venv .venv
+source .venv/bin/activate
+```
+
+### 步骤 3：安装 rembg
+
+```bash
+pip install "rembg[cpu,cli]"
+```
+
+**注意**：需要同时安装 `cpu` 和 `cli` 两个额外依赖：
+- `cpu`：提供 onnxruntime CPU 推理后端
+- `cli`：提供命令行工具支持
+
+### 步骤 4：创建处理脚本
+
+创建 `process_gif.py`：
+
+```python
+import os
+import sys
+from PIL import Image
+from rembg import remove
+
+def process_animated_gif(input_path, output_path):
+    """处理动画 GIF，去除每一帧的背景"""
+    print(f"Processing: {input_path}")
+    
+    # 打开 GIF
+    gif = Image.open(input_path)
+    frames = []
+    durations = []
+    
+    try:
+        while True:
+            # 获取当前帧的持续时间
+            duration = gif.info.get('duration', 100)
+            durations.append(duration)
+            
+            # 转换为 RGBA
+            frame = gif.convert('RGBA')
+            
+            # AI 去除背景
+            print(f"  Processing frame {len(frames) + 1}...")
+            frame_no_bg = remove(frame)
+            frames.append(frame_no_bg)
+            
+            # 下一帧
+            gif.seek(gif.tell() + 1)
+    except EOFError:
+        pass
+    
+    print(f"  Total frames: {len(frames)}")
+    
+    # 保存为 APNG（透明动画 PNG）
+    if frames:
+        frames[0].save(
+            output_path,
+            save_all=True,
+            append_images=frames[1:],
+            duration=durations,
+            loop=0
+        )
+        print(f"  Saved to: {output_path}")
+
+if __name__ == "__main__":
+    if len(sys.argv) != 3:
+        print("Usage: python process_gif.py input.gif output.apng")
+        sys.exit(1)
+    
+    process_animated_gif(sys.argv[1], sys.argv[2])
+```
+
+### 步骤 5：处理 GIF 文件
+
+```bash
+source .venv/bin/activate
+python process_gif.py assets/images/activity/border_collie/sit.gif assets/images/activity/border_collie/sit.apng
+```
+
+## 🛠️ 快速命令参考
+
+```bash
+# 激活环境
+cd /Users/mac/Desktop/paaawow_front
+source .venv/bin/activate
+
+# 处理单个文件
+python process_gif.py <input.gif> <output.apng>
+
+# 示例
+python process_gif.py assets/images/activity/chihuahua/sit.gif assets/images/activity/chihuahua/sit.apng
+```
+
+---
+
+
+
+
+
