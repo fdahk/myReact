@@ -6251,3 +6251,95 @@ const requestBody = {
   carrier: data.carrier,  // ← undefined 时会被JSON序列化自动忽略
   // 其他字段...
 };
+
+
+## 2026-02-19 本次会话记录：Two Sum / Map / Set / Array.from
+
+### Two Sum（两数之和）常见错误点
+
+- **`Array.prototype.sort` 参数必须是函数**
+  - 错误：`nums.sort(a - b)`（传入了数字）
+  - 正确：`nums.sort((x, y) => x - y)`
+- **比较写成赋值**
+  - 错误：`if (tp = target)`（`=` 是赋值）
+  - 正确：`if (tp === target)`
+- **排序会破坏“原数组下标”**
+  - 题目通常要求返回原数组的 index；如果你对 `nums` 原地排序，再用双指针返回 `[a, b]`，那是排序后的下标，不是原下标
+  - 若想用“排序 + 双指针”，需要保存 `[{ value, index }]` 再排序，返回的是保存的 `index`
+
+推荐写法：哈希表（`Map`）一次遍历，直接返回原下标：
+
+```js
+function twoSum(nums, target) {
+  const seen = new Map(); // value -> index
+  for (let i = 0; i < nums.length; i++) {
+    const need = target - nums[i];
+    if (seen.has(need)) return [seen.get(need), i];
+    seen.set(nums[i], i);
+  }
+  return [];
+}
+```
+
+### `Map`：`has` / `get` / `set`
+
+- **`has(key)`**：是否存在该 key，返回 `true/false`
+- **`get(key)`**：获取 key 对应的 value；不存在返回 `undefined`
+- **`set(key, value)`**：写入或更新键值对；返回 `Map` 本身（可链式调用）
+
+```js
+const m = new Map();
+m.set("a", 1);
+m.has("a"); // true
+m.get("a"); // 1
+m.set("a", 2).set("b", 3);
+```
+
+### `Array.from()`：把 iterable / array-like 转成数组（可顺便映射）
+
+语法：
+
+```js
+Array.from(arrayLikeOrIterable, mapFn?, thisArg?)
+```
+
+常见用法：
+
+- **把 `Set` 去重结果转数组**
+
+```js
+Array.from(new Set([1, 1, 2])); // [1, 2]
+```
+
+- **把 `Map` 转数组（默认迭代 entries）**
+
+```js
+const m = new Map([["a", 1], ["b", 2]]);
+Array.from(m);        // [["a", 1], ["b", 2]]
+Array.from(m.keys()); // ["a", "b"]
+Array.from(m.values()); // [1, 2]
+```
+
+- **生成长度为 N 的序列**
+
+```js
+Array.from({ length: 5 }, (_, i) => i); // [0, 1, 2, 3, 4]
+```
+
+### 为什么 `new Set([...])` 可以传数组？为什么 `new Map([["k","v"]])` 是 `[][]`？
+
+这是 JavaScript（ECMAScript）对内建类型构造函数的 API 约定，核心是 **“从 iterable 初始化”** 的统一设计：
+
+- **`new Set(iterable)`**
+  - `iterable` 每次迭代产出的元素，会被依次 `add` 进 `Set`
+  - 数组是 iterable，所以可以直接传数组
+- **`new Map(iterableOfEntries)`**
+  - 外层参数也是 iterable
+  - 但它要求 iterable 的每一项是一个 entry：形如 `[key, value]` 的二元结构
+  - 所以经常写成 `new Map([["a", 1], ["b", 2]])`
+
+理解这种设计的关键词：**统一、可组合、语义清晰**
+
+- 统一：都支持 `for...of` 可遍历的数据源
+- 可组合：容器之间互转简单（如 `Array.from(set)`、`Array.from(map)`、`Array.from(map.entries())`）
+- 语义清晰：`Set` 存“值”，`Map` 存“键值对 entry”

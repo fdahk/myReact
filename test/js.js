@@ -1,25 +1,17 @@
 /**
- * @param {string} word
+ * @param {number[]} nums
  * @return {number}
  */
-var numberOfSpecialChars = function(word) {
-    const low = {} 
-    const up = {}
-    const res = {}
-    let i; 
-    for(i of word) {
-        if(i >= 'a' && i <= 'z' && !up[i.toUpperCase()] ) {
-            low[i] = true 
-        }
-        else if(i >= 'A' && i <= 'Z') {
-            up[i] = true
-            if(low[i.toLowerCase()] && low[i.toLowerCase()] !== false) {
-                res[i] = true
-            }
-        } 
-        else if(i >= 'a' && i <= 'z' && up[i.toUpperCase()]) {
-            res[i] = false
-        }
+var longestConsecutive = function(nums) {
+    const set = new Set(nums);
+    let best = 0;
+
+    for (const n of set) {
+        if (set.has(n - 1)) continue; // not a sequence start
+        let len = 1;
+        while (set.has(n + len)) len++;
+        if (len > best) best = len;
     }
-    return Object.keys(res).length
+
+    return best;
 };
