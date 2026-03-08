@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>我的个人主页</title>
+    <style>
+      :root {
+        --primary: #2f54eb;
+        --bg: #f5f7fb;
+        --text: #1f1f1f;
+        --muted: #666666;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+        color: var(--text);
+        background: var(--bg);
+      }
+
+      .container {
+        width: min(960px, 92%);
+        margin: 0 auto;
+      }
+
+      header {
+        background: linear-gradient(120deg, #2f54eb, #1d39c4);
+        color: #ffffff;
+        padding: 30px 0;
+      }
+
+      header h1 {
+        margin: 0;
+        font-size: 32px;
+      }
+
+      header p {
+        margin: 8px 0 0;
+        opacity: 0.9;
+      }
+
+      nav {
+        background: #ffffff;
+        border-bottom: 1px solid #e8e8e8;
+      }
+
+      nav .container {
+        display: flex;
+        gap: 20px;
+        padding: 12px 0;
+        flex-wrap: wrap;
+      }
+
+      nav a {
+        color: #333333;
+        text-decoration: none;
+        padding: 6px 10px;
+        border-radius: 6px;
+      }
+
+      nav a:hover {
+        color: var(--primary);
+        background: #eef2ff;
+      }
+
+      main {
+        padding: 24px 0 30px;
+      }
+
+      section {
+        background: #ffffff;
+        border-radius: 12px;
+        padding: 18px;
+        margin-bottom: 16px;
+        box-shadow: 0 8px 22px rgba(0, 0, 0, 0.05);
+      }
+
+      h2 {
+        margin: 0 0 12px;
+        font-size: 22px;
+      }
+
+      .desc {
+        margin: 8px 0 0;
+        color: var(--muted);
+      }
+
+      .carousel {
+        position: relative;
+        height: 180px;
+        border-radius: 10px;
+        overflow: hidden;
+      }
+
+      .slide {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #ffffff;
+        font-size: 24px;
+        font-weight: 700;
+        opacity: 0;
+        animation: fade 9s infinite;
+      }
+
+      .slide:nth-child(1) {
+        background: linear-gradient(120deg, #1890ff, #0050b3);
+        animation-delay: 0s;
+      }
+
+      .slide:nth-child(2) {
+        background: linear-gradient(120deg, #13c2c2, #006d75);
+        animation-delay: 3s;
+      }
+
+      .slide:nth-child(3) {
+        background: linear-gradient(120deg, #9254de, #531dab);
+        animation-delay: 6s;
+      }
+
+      @keyframes fade {
+        0%,
+        26% {
+          opacity: 1;
+        }
+        33%,
+        100% {
+          opacity: 0;
+        }
+      }
+
+      .intro {
+        display: grid;
+        grid-template-columns: 120px 1fr;
+        gap: 16px;
+        align-items: center;
+      }
+
+      .avatar {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: linear-gradient(120deg, #ff9c6e, #fa541c);
+        display: grid;
+        place-items: center;
+        color: #ffffff;
+        font-size: 34px;
+        font-weight: 700;
+      }
+
+      .album {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+      }
+
+      .photo {
+        height: 110px;
+        border-radius: 10px;
+        background: linear-gradient(130deg, #d6e4ff, #adc6ff);
+        display: grid;
+        place-items: center;
+        color: #1d39c4;
+        font-weight: 700;
+      }
+
+      footer {
+        background: #111827;
+        color: #d1d5db;
+        padding: 20px 0;
+      }
+
+      footer p {
+        margin: 6px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="container">
+        <h1>涂将的个人主页</h1>
+        <p>记录成长、兴趣与学习</p>
+      </div>
+    </header>
+
+    <nav>
+      <div class="container">
+        <a href="#life">个人生活</a>
+        <a href="#hobbies">兴趣爱好</a>
+        <a href="#courses">软件工程</a>
+        <a href="#contact">联系我</a>
+      </div>
+    </nav>
+
+    <main class="container">
+      <section id="life">
+        <h2>轮播图</h2>
+        <div class="carousel">
+          <div class="slide">生活瞬间</div>
+          <div class="slide">学习日常</div>
+          <div class="slide">城市探索</div>
+        </div>
+        <p class="desc">该区域使用纯 CSS 实现简单轮播切换效果。</p>
+      </section>
+
+      <section id="hobbies">
+        <h2>个性宣传</h2>
+        <div class="intro">
+          <div class="avatar">我</div>
+          <div>
+            <p>一名热爱前端开发的学生，喜欢把想法变成可交互的网页。</p>
+            <p class="desc">兴趣方向：编程、阅读、摄影、羽毛球。</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="courses">
+        <h2>个人相册</h2>
+        <div class="album">
+          <div class="photo">相册 1</div>
+          <div class="photo">相册 2</div>
+          <div class="photo">相册 3</div>
+        </div>
+      </section>
+    </main>
+
+    <footer id="contact">
+      <div class="container">
+        <p>版权所有 © 2026 涂将的个人主页</p>
+        <p>联系方式：XXX | 备案信息：XXX</p>
+      </div>
+    </footer>
+  </body>
+</html>
