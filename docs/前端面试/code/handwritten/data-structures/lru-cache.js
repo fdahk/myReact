@@ -1,10 +1,26 @@
 /*
-面试讲解点：LRU 缓存
-- 题目本质：本质是同时满足 O(1) 查询和 O(1) 更新，所以通常用哈希表加双向链表。
-- 复杂度：get 和 put 的核心操作通常都是 O(1)，额外空间 O(capacity)。
-- 易错点：只用数组会退化到 O(n)；更新已存在 key 时要先移动到头部；容量满时要淘汰尾节点。
-- 追问方向：可以继续延伸为什么不用 FIFO、如果要实现 LFU 应该怎么改。
-- 讲题顺序：先确认需求，再说核心思路，然后写最小实现，最后补边界、优化点和适用场景。
+实现目标：
+- 实现一个简化版 LRU（Least Recently Used）缓存，支持按容量淘汰“最近最少使用”的键值对。
+-
+核心思路：
+- 标准高性能写法通常是“哈希表 + 双向链表”，可以把 `get` / `put` 都做到严格 O(1)。
+- 当前示例为了突出 LRU 的访问顺序语义，直接复用 `Map` 的插入有序特性：
+- 访问或更新某个 key 时，先删除再重新插入，让它移动到“最新使用”的位置。
+- 容量超限时，淘汰 `Map` 中最早插入、也就是最久未使用的那个 key。
+-
+复杂度 / 运行特征：
+- 从语义上看，这个实现完整表达了 LRU 行为。
+- 在现代 JavaScript 引擎中，`Map` 的 `get` / `set` / `delete` 通常可近似看作 O(1)。
+- 相比链表版本，这个实现更短、更适合面试第一版答案，但不强调底层结构控制。
+-
+易错点：
+- `get` 不能只返回值，必须顺带刷新该 key 的“最近使用”顺序。
+- `put` 更新已有 key 时也要先删除再插入，否则顺序不会变化。
+- 容量满时淘汰的是最旧 key，而不是随机 key，也不是最近访问的 key。
+-
+适用场景 / 面试表达点：
+- 常见于页面缓存、接口结果缓存、数据库热点数据缓存。
+- 面试时可以先给出 `Map` 版快速说明思路，再补一句“若题目强调严格结构设计，可升级成哈希表 + 双向链表”。
 */
 
 class LRUCache {
@@ -19,6 +35,7 @@ class LRUCache {
     }
 
     const value = this.map.get(key);
+    // 删除后重新插入，借助 Map 的顺序语义把该键刷新为最近使用。
     this.map.delete(key);
     this.map.set(key, value);
     return value;
@@ -26,12 +43,17 @@ class LRUCache {
 
   put(key, value) {
     if (this.map.has(key)) {
+      // 已存在时先删除，避免旧顺序残留。
       this.map.delete(key);
     }
 
     this.map.set(key, value);
 
     if (this.map.size > this.capacity) {
+      // Map 的第一个键就是当前“最久未使用”的键。
+      // 调用迭代器的 next() 方法，会返回一个包含 value 和 done 的对象：
+      // value：当前迭代位置的键（第一次调用 next() 就是第一个插入的键）；
+      // done：布尔值，表示迭代是否结束（第一次调用为 false）。
       const oldestKey = this.map.keys().next().value;
       this.map.delete(oldestKey);
     }

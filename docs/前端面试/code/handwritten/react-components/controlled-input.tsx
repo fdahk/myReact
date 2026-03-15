@@ -1,11 +1,25 @@
 /*
-面试讲解点：受控输入组件
-- 题目本质：本质是输入值由 React state 驱动，UI 和数据源保持单向数据流。
-- 复杂度：单次输入更新通常 O(1)，整体性能取决于组件树。
-- 易错点：value 和 onChange 必须成对出现、性能抖动、格式化输入边界。
-- 追问方向：可以追问非受控组件、表单库设计。
-- 讲题顺序：先确认需求，再说核心思路，然后写最小实现，最后补边界、优化点和适用场景。
-*/
+ * 实现目标：
+ * - 给出一个最小可运行的受控输入组件示例，展示输入框的值完全由 React state 驱动。
+ * - 让输入框与展示文案始终读取同一份状态，体现单向数据流和“状态即唯一数据源”。
+ *
+ * 核心思路：
+ * - 用 `useState` 保存当前输入值。
+ * - `input` 的 `value` 绑定到状态，`onChange` 中把用户输入重新写回状态，形成标准受控组件闭环。
+ *
+ * 复杂度 / 运行特征：
+ * - 单次输入事件处理本身是 O(1)，但会触发当前组件重新渲染。
+ * - 实际性能主要取决于输入联动的组件树规模，以及是否在输入时做了昂贵计算。
+ *
+ * 易错点：
+ * - 只写 `value` 不写 `onChange` 会让输入框变成只读。
+ * - 在 `onChange` 里做同步重计算，容易造成输入卡顿。
+ * - 做格式化输入时要注意光标位置和组合输入法边界。
+ *
+ * 适用场景 / 面试表达点：
+ * - 适合讲表单受控、数据同步、校验联动、输入状态统一管理。
+ * - 面试里可以顺带对比非受控组件，以及说明表单库为什么通常建立在受控模型之上。
+ */
 
 import { useState } from 'react';
 
@@ -14,8 +28,13 @@ export function ControlledInput() {
 
   return (
     <div>
-      <input value={value} onChange={(event) => setValue(event.target.value)} placeholder="请输入内容" />
-      <p>当前输入：{value}</p>
+      <input
+        value={value}
+        // 每次输入都把最新值回写到 state，保持视图与数据源一致。
+        onChange={(event) => setValue(event.target.value)}
+        placeholder="Type something"
+      />
+      <p>Current value: {value}</p>
     </div>
   );
 }
