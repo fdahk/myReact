@@ -29,7 +29,7 @@ Function.prototype.myApply = function myApply(context, args = []) {
   target[key] = this;
   // 以对象方法形式调用，this 会自然绑定到 target。
   const result = target[key](...args);
-  delete target[key];
+  delete target[key]; //delete 是专门的操作符，作用是移除对象上指定的属性（包括数组的索引属性，因为数组本质是特殊对象）
   return result;
 };
 
