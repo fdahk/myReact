@@ -1,6 +1,28 @@
-## 2026-03-15
+## 2025-03-25
 
-- 补充 `docs/JS.md`：新增“为什么 `for`、`for...of + entries()`、`slice().forEach()` 的性能会不一样”专题说明。
-- 说明内容覆盖：传统 `for`、迭代器协议、`entries()`、解构赋值、`slice()` 浅拷贝、`forEach()` 回调成本、JIT、GC、常数项、在线评测波动原因。
-- 修正文档中对“迭代器更省内存”的表述，补充“更省整体内存不等于一定更快”的限制条件，避免误解。
-- 补充 `docs/前端面试/code/handwritten/object/object-topic.js` 注释：细化说明组合继承、原型链查找、`instanceof` / `isPrototypeOf`、`this` 绑定、枚举规则、浅拷贝以及 `preventExtensions` / `seal` / `freeze` 的行为差异。
+- **docs/前端面试/JavaScript.md**：删除误插入在「五、异步与事件循环」开头的零散笔记；新增 **「十三、异步与 Promise 易错深挖（补充）」**，编号 126–135，收录事件循环与 Promise 的实操判断方式、`setTimeout` 语义、定时器顺序与精度、`then/catch/finally` 非函数入参行为、常见输出题与链式返回新 Promise 等面试口述要点。
+- **docs/前端面试/JavaScript.md**：在「十三」末新增 **第 136 题**，说明 `Promise.resolve` 与 `new Promise` 的分工、静态工厂语义、与「先 new 再链式」的辨析，并点出中间无 `reject` 时 `catch` 不执行的链式陷阱。
+- **docs/前端面试/JavaScript.md**：新增 **第 137 题**，拆解 `const promise = Promise.resolve().then(() => promise)` 的求值顺序、闭包与自引用解析，说明规范对 chaining cycle 的 `TypeError` 拒绝，并指出 `console.err` 笔误导致 `catch` 非函数、拒绝可能未被消费。
+- **docs/前端面试/JavaScript.md**：新增 **第 138 题**，按 `P0 -> P1 -> P2 -> P3` 拆解 `Promise.resolve(1).then(2).then(Promise.resolve(3)).then(console.log)`，重点说明“非函数参数才发生透传；最后一环传入 `console.log` 后，链会改为消费上一环值并以下一个返回值继续传播”。
+- **docs/前端面试/JavaScript.md**：新增 **第 139 题**，详细解释 `then(...).finally(...)` 与 `finally(...).then(...)` 的链值传播、执行顺序，以及为什么 `finally` 的返回值通常不会改掉后续 `then` 接到的值，只有抛错或返回 rejected Promise 才会打断原链。
+- **docs/前端面试/JavaScript.md**：新增 **第 140 题**，拆解 `Promise.all([runAsync(1), runAsync(2), runAsync(3)])` 的完整执行过程，覆盖 `new Promise` executor 同步执行、`setTimeout` 宏任务、`r(x, console.log(x))` 的参数求值顺序、`resolve` 只取首参以及 `Promise.all` 保序聚合的规则。
+- **docs/前端面试/JavaScript.md**：新增 **第 141 题**，解释 `obj.fun()` 与 `new obj.fun()` 的 `this` 差异，重点说明 `new` 绑定优先级高于隐式绑定，以及新实例对象默认没有 `name` 属性，因此输出 `undefined`。
+- **docs/前端面试/JavaScript.md**：新增 **第 142 题**，解释 `o()`、`obj.say()`、`obj.pro.getPro()` 三种调用里 `this` 的差异，核心说明“普通函数看调用点，箭头函数看定义点”，以及对象字面量里的箭头方法不会把 `this` 绑定到该对象本身。
+- **docs/前端面试/JavaScript.md**：新增 **第 143 题**，解释对象字面量中的 IIFE 会在创建对象时立刻执行、IIFE 默认绑定先修改 `window.number`，以及 IIFE 返回的普通函数在 `db1()` 与 `obj.db1()` 两种调用方式下分别修改 `window.number` 与 `obj.number`。
+- **docs/前端面试/JavaScript.md**：扩充 **第 143 题** 中对 `IIFE` 的定义与“为什么要用括号”的解释；新增 **第 144 题**，专门总结 IIFE 的本质、常见写法、使用场景，以及“函数声明语义切换到函数表达式语义”的原因。
+- **docs/前端面试/JavaScript.md**：新增 **第 145 题**，解释为什么“最外层声明”不等于“自动挂到 `window`”，区分全局绑定与全局对象属性，并补充普通脚本与 ES Module 场景下 `var/function` 与 `let/const/class` 的差异。
+- **docs/前端面试/JavaScript.md**：新增 **第 146 题**，对比解释 `function a(xx){ this.x = xx; return this }` 这题在浏览器普通脚本与 Node 模块环境中的不同结果，重点说明“直接调用的 `this` 写向全局对象”与“顶层 `var` 是否和全局对象属性共用绑定槽”是两层不同问题。
+- **docs/前端面试/JavaScript.md**：新增 **第 147 题**，解释 `(function(){ var x = y = 1; })();` 中为什么 `y` 会在非严格模式下泄漏成全局，而 `x` 只是 IIFE 内部变量；并补充 `var` 只声明左侧变量、赋值表达式右结合及严格模式下会直接抛错的规则。
+- **docs/前端面试/JavaScript.md**：新增 **第 148 题**，详细解释 `friendName` 题里为什么 `var` 会提升到整个 IIFE 顶部并遮蔽外层变量，同时汇总 `var/let/const/function/class` 的作用域与提升规则。
+- **docs/前端面试/JavaScript.md**：新增 **第 149 题**，对比解释“在函数内部定义 `b`”与“在外部定义 `b` 再在 `a` 中调用”的差异，核心说明 JavaScript 采用词法作用域，变量查找看函数定义位置而不是调用位置。
+- **docs/前端面试/JavaScript.md**：新增 **第 150 题**，系统解释 JavaScript 的创建阶段与执行阶段、`function`/`var`/`let`/`const`/`class` 的提升差异，以及同名函数声明与 `var` 声明、后续赋值混在一起时为什么结果会和直觉不一致。
+- **docs/前端面试/JavaScript.md**：新增 **第 151 题**，从宿主接收源码、解析/编译、执行上下文创建、同步执行、事件循环推进等主线，分别详细解释浏览器与 Node 环境下一份 JS 文件从加载到运行的完整阶段差异。
+- **docs/前端面试/JavaScript.md**：新增 **第 152 题**，详细解释 `function` 声明在普通函数体内可按函数作用域理解、为什么函数声明在创建阶段就拿到完整函数值，以及为什么块内函数声明不能简单等同于 `var`。
+- **docs/前端面试/JavaScript.md**：新增 **第 153 题**，详细解释 `f/g` 这道经典输出题，重点补充非严格模式下块内函数声明的 Annex B 兼容语义、`[] == ![]` 的类型转换过程，以及为什么最终会把全局 `f` 改写成返回 `false` 的函数。
+- **docs/前端面试/JavaScript.md**：扩充 **第 153 题** 中 `[] == ![]` 的解释，按运算符优先级和抽象相等比较规则拆解 `![] -> false -> 0`、`[] -> '' -> 0` 的完整转换链路。
+- **docs/前端面试/JavaScript.md**：新增 **第 154 题**，以 `Person / p2 / Object / Function` 为例完整展示实例对象、构造函数、`prototype`、`__proto__` 与 `constructor` 之间的整张原型关系图，并逐条对应常见输出题的每一行结果。
+- **docs/前端面试/JavaScript.md**：新增 **第 155 题**，解释 `function A(){}` 能否类比为“类”，重点区分“函数对象本身直接作为构造函数使用”与“传统 class 模板”之间的差异，并说明 `A.prototype` 在实例共享中的角色。
+- **docs/前端面试/JavaScript.md**：新增 **第 156 题**，完整拆解 `Foo/getName` 经典题，结合创建阶段与执行阶段、普通调用/对象调用/构造调用、原型链查找以及 `new`/`.`/`()` 的结合顺序逐条解释每一行输出。
+- **docs/前端面试/小米一面.md**：补充 React 闭包题中 `count` 的本质说明，明确它在当前 render 中只是普通值/快照，不是 React 特有可变对象；并区分“当前闭包里的旧值”与“下一次渲染里的新 state”。
+- **docs/前端面试/小米一面.md**：在 React 闭包题后补充 React 与 Vue 的异步取值对比，说明 Vue 的 `ref/reactive` 更像响应式容器，因此异步回调读取容器当前值时通常能拿到最新状态，但若先解构成普通值也同样会旧。
+- **docs/前端面试/React.md**：新增 **第 123 题**，详细解释函数组件重新执行为什么不等于 DOM 立刻变化，区分 render 阶段负责“重新计算 UI 描述”和 commit 阶段负责“真正提交 DOM 变更”的职责边界。
