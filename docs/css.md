@@ -377,11 +377,103 @@ mathml|math {
 - `[attr*=value]` - attr属性值包含value子串
 - `[attr=value i]` - 不区分大小写匹配
 
+**使用实例**：
+
+```html
+<ul class="link-list">
+    <li><a href="https://example.com">Official Site</a></li>
+    <li><a href="/guide.pdf">CSS Guide</a></li>
+    <li><a data-role="button primary" data-lang="en-US">Primary Button</a></li>
+    <li><a data-role="button secondary" data-lang="zh-CN">Secondary Button</a></li>
+    <li><input type="TEXT" value="Search" /></li>
+</ul>
+```
+
+```css
+/* 只要有 href 属性就会命中 */
+[href] {
+    text-decoration: none;
+}
+
+/* 精确匹配属性值 */
+[href="/guide.pdf"] {
+    color: #d97706;
+}
+
+/* 属性值里包含某个独立单词 */
+[data-role~="primary"] {
+    font-weight: 700;
+}
+
+/* 常用于匹配语言代码 */
+[data-lang|="zh"] {
+    background: #f0f9ff;
+}
+
+/* 以前缀开头 */
+[href^="https"] {
+    color: #2563eb;
+}
+
+/* 以后缀结尾 */
+[href$=".pdf"] {
+    border-bottom: 2px solid currentColor;
+}
+
+/* 只要属性值中包含该片段即可 */
+[data-role*="button"] {
+    padding: 4px 8px;
+}
+
+/* 不区分大小写 */
+[type="text" i] {
+    border: 1px solid #22c55e;
+}
+```
+
 ### 组合选择器
 - **后代选择器**: `A B` - A元素内的所有B元素
 - **子选择器**: `A > B` - A元素的直接子元素B
 - **相邻兄弟选择器**: `A + B` - A元素后紧邻的B元素
 - **通用兄弟选择器**: `A ~ B` - A元素后的所有兄弟B元素
+
+**使用实例**：
+
+```html
+<div class="card">
+    <h3>Card Title</h3>
+    <p>Intro Text</p>
+    <section>
+        <p>Nested Text</p>
+    </section>
+    <button>Confirm</button>
+    <span>Hint</span>
+    <span>Status</span>
+</div>
+```
+
+```css
+/* 选中 .card 里面所有 p，包括嵌套在 section 里的 */
+.card p {
+    color: #475569;
+}
+
+/* 只选中 .card 的直接子元素 button */
+.card > button {
+    background: #2563eb;
+    color: #fff;
+}
+
+/* 选中 button 后面紧挨着的第一个 span */
+button + span {
+    color: #f59e0b;
+}
+
+/* 选中 button 后面所有同级 span */
+button ~ span {
+    font-size: 12px;
+}
+```
 
 ### 伪类选择器
 #### 状态伪类
@@ -408,6 +500,91 @@ mathml|math {
 - `:only-of-type` - 同类型唯一元素
 - `:empty` - 空元素
 - `:root` - 根元素
+
+**使用实例**：
+
+```html
+<ul class="menu">
+    <li>Home</li>
+    <li>Docs</li>
+    <li>Blog</li>
+    <li>About</li>
+</ul>
+
+<div class="article">
+    <p>First Paragraph</p>
+    <p>Second Paragraph</p>
+    <span>Inline Note</span>
+    <p>Third Paragraph</p>
+</div>
+
+<div class="single-wrap">
+    <span>Only Item</span>
+</div>
+
+<div class="empty-box"></div>
+```
+
+```css
+.menu li:first-child {
+    color: #2563eb;
+}
+
+.menu li:last-child {
+    color: #dc2626;
+}
+
+.menu li:nth-child(2) {
+    font-weight: 700;
+}
+
+.menu li:nth-last-child(2) {
+    text-decoration: underline;
+}
+
+.article p:first-of-type {
+    font-size: 18px;
+}
+
+.article p:last-of-type {
+    color: #16a34a;
+}
+
+.article p:nth-of-type(2) {
+    background: #fef3c7;
+}
+
+.article p:nth-last-of-type(2) {
+    border-left: 3px solid #7c3aed;
+}
+
+.single-wrap span:only-child {
+    display: inline-block;
+    padding: 4px 8px;
+}
+
+.single-wrap span:only-of-type {
+    background: #e0f2fe;
+}
+
+.empty-box:empty {
+    height: 24px;
+    background: #f1f5f9;
+}
+
+:root {
+    --brand-color: #2563eb;
+}
+```
+
+**重点理解**：
+- `:first-child` / `:last-child` 看的是“是不是父元素的第一个或最后一个孩子”。
+- `:nth-child(n)` 不关心元素类型，只看它在兄弟节点里的整体顺序。
+- `:first-of-type` / `:nth-of-type(n)` 只在同类型元素里排顺序。
+- `:only-child` 要求父元素下只有这一个子元素。
+- `:only-of-type` 表示同级里这种标签只出现一次，即使旁边还有别的标签也可能命中。
+- `:empty` 要求元素内部没有文本、没有子元素，连空格都可能影响匹配。
+- `:root` 在 HTML 文档里通常就是 `<html>`，常用于定义全局 CSS 变量。
 
 #### 其他伪类
 - `:not(selector)` - 非选择器

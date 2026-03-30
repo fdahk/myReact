@@ -1,3 +1,86 @@
+## 2026-03-30
+
+- **docs/前端面试/灰度发布与回滚.md**：继续在选型分析章节中新增“为什么 `Flutter` 和 `Web` 的发版机制差异，会直接影响工具选择”，系统补充 Web 发版快 / 回滚快 / 试错成本低为何会放大实验平台价值，移动端提审慢 / 用户更新慢 / 多版本长期共存 / 止血难为何会让灰度发布与远程开关优先级更高，并进一步澄清“`Flutter` 不是一般不做 `AB` 测试，而是更常见顺序是先把灰度和开关做稳，再把实验做深”的工程原因。
+
+- **docs/前端面试/灰度发布与回滚.md**：在第三方工具章节下新增 **「7.2.3 真正做决策时，应该怎么选」**，不再停留在工具罗列，而是改为决策导向分析：系统补充 `LaunchDarkly`、`Flagsmith`、`GrowthBook`、`Statsig`、`ConfigCat` 的定位差异、横向对比维度、`React Web` 与 `Flutter` 的不同选型重心，以及按“发布控制优先 / 实验能力优先 / 平台自控优先”给出的推荐结论，帮助从“知道有哪些方案”升级为“知道该怎么选方案”。
+
+- **docs/前端面试/灰度发布与回滚.md**：补充 `Statsig` 方案说明，在偏实验平台的第三方工具列表中新增对 `Statsig` 的定位解释，说明其更偏“实验平台 + Feature Flag + 数据分析联动”；同时在 `Flutter` 非 Firebase 方案小节中补充 `Statsig` 的适用场景，并将“偏实验体系、分组稳定性、方案对比”的推荐从仅 `GrowthBook` 扩展为 `GrowthBook`、`Statsig` 两条主流路线。
+
+- **docs/前端面试/灰度发布与回滚.md**：继续补充 `Flutter` 选型说明，在 `Firebase Remote Config + Firebase A/B Testing` 段落后新增“如果 `Flutter` 项目不在 Firebase 体系里，主流方案有哪些”，系统补充 `LaunchDarkly`、`Flagsmith`、`GrowthBook`、`ConfigCat` 与自建最小可用方案的适用场景，并按“偏灰度发布 / 偏实验体系 / 偏平台自控”给出更贴近实际项目决策的选择建议。
+
+- **docs/前端面试/灰度发布与回滚.md**：修正文档中“默认优先选择可同时覆盖 `React` 与 `Flutter` 的同一套平台”这一口径，明确 `React Web` 与 `Flutter` 通常是两个独立项目，不需要为了统一而强行共用一套工具；并将第三方工具选型改写为“按各自领域常用方案选择”，分别强调 Web 侧更常见的 `LaunchDarkly` / `Flagsmith` / `ConfigCat` / `GrowthBook`，以及 Flutter 侧更常见的 `LaunchDarkly` / `Flagsmith` / `Firebase Remote Config + Firebase A/B Testing` / `GrowthBook` 评估路径。
+
+- **docs/前端面试/灰度发布与回滚.md**：继续补充 **「7.2.1 什么叫分桶」** 与 **「7.2.2 有没有第三方工具可以直接用」**，系统解释分桶的本质、为什么灰度发布和 `AB` 测试都依赖稳定分桶、分桶与随机的区别、常见踩坑，并补充 `React Web` 与 `Flutter` 可直接接入的第三方工具思路，区分偏灰度发布的 `LaunchDarkly`、`Flagsmith`、`ConfigCat` 与偏实验体系的 `GrowthBook`、`Firebase Remote Config + Firebase A/B Testing`，同时强调第三方 SDK 能解决的能力边界与仍需团队自己建设的工程部分。
+
+- **docs/前端面试/灰度发布与回滚.md**：修正“灰度发布与 `AB` 测试实施方案没有明确拆开”的问题，在实施章节开头新增“二者不是同一个业务需求，只是共享底层基础设施”的说明，并继续补充 **「7.3.1 灰度发布的独立实施方案」** 与 **「7.3.2 `AB` 测试的独立实施方案」**，分别按目标、关注点和执行步骤拆清“安全上线流程”和“效果验证流程”，避免把灰度放量与实验设计混成一个动作。
+
+- **docs/前端面试/灰度发布与回滚.md**：继续新增 **「七、真正实施方案：现在就在项目里引入灰度发布和 `AB` 测试」**，把文档从“原理解释”进一步扩展为“可执行实施手册”，系统补充三种常见选型、8 个前置决策、10 步通用落地流程，以及分别面向 `React Web` 与 `Flutter 3 + Riverpod + go_router + Dio` 的接入步骤，覆盖 `bootstrap` 配置、统一分流协议、稳定身份、Hook / Provider 封装、路由守卫、曝光埋点、`Dio` 请求头透传、放量顺序、回滚止血与最小可用版本 checklist。
+
+- **docs/前端面试/灰度发布与回滚.md**：在原有面试问答基础上新增 **「六、灰度发布与 `AB` 测试怎么真正落地做」**，系统补充前端灰度发布的工程化落地思路，包括版本灰度 / 功能灰度 / 配置灰度分层、稳定分桶策略、前后端与 BFF / 配置中心协同、分批放量节奏、监控守护指标、特性开关配合、`AB` 实验设计、分流单位选择、实验污染与统计误判避坑，以及“先灰度验证稳定性、再做实验验证收益”的真实项目协同路径。
+
+- **docs/css.md**：补充 `属性选择器详细语法`、`组合选择器`、`结构伪类` 三个小节的教学型内容，新增可直接理解命中结果的 HTML/CSS 示例，并补充各类选择器的典型匹配场景、命中范围和易混淆点，帮助从“语法速查”升级为“结合示例理解实际选择过程”。
+- **docs/前端面试/小米二面.md**：在“React 这套组件重执行 + diff + 调度”对应段落下补充“状态变了组件为什么会重新执行”的底层机制说明，串起 `setState / props / context` 触发更新、Fiber 更新队列、优先级调度、render 阶段重新执行组件、reconciliation 比较新旧树以及 commit 阶段提交 DOM 变更的完整链路，并强调“组件重新执行”不等于“真实 DOM 全量重建”。
+- **docs/前端面试/小米二面.md**：继续补充 `Fiber 树` 与 React 中几类“树”的关系，系统区分 `React Element / JSX 树`、`Fiber 树`、`current tree`、`workInProgress tree`、真实 DOM / 宿主树各自的职责，并解释一次更新时这些树如何从“产出 UI 描述 -> 构建工作树 -> commit 到宿主环境 -> 新旧 Fiber 树切换”串成完整流程。
+- **docs/前端面试/小米二面.md**：补充 `Vue 和 React 是否都有虚拟 DOM 树` 的对照解释，区分 Vue 中的 `VNode` 树、React 中可近似理解为虚拟 DOM 的 `React Element` 树，以及 React 更底层的 `Fiber` 运行时工作树；同时新增 `patch` 概念说明，解释它是把比较后的差异真正同步到真实 DOM 的过程，并澄清它与 `diff`、React `commit` 的对应关系。
+- **docs/前端面试/小米二面.md**：继续扩充浏览器与 AI 两处面试点说明：在 DevTools 章节下详细补充 `Lighthouse` 的定位、常见审计维度、使用方式、关键指标和与 `Performance` 面板的配合关系；在大模型 `token` 章节下补充“文本切 token 属于 tokenizer / 模型服务层职责”的工程边界，明确普通前端调用第三方 AI 时通常不需要手动分词，但仍需理解 token 对上下文窗口、成本、截断和延迟的影响。
+
+## 2026-03-27
+
+- **docs/前端面试/code/handwritten/react-components/zustand-create-store.tsx**：继续补强 `useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)` 段落的学习型注释，专门解释“为什么源码里看不到手动调用 `() => selector(getState())`，但 React 会在 render 阶段读取快照、在外部 store 更新后再次执行 `getSnapshot`，并根据新旧快照决定是否推进组件更新”的底层运行链路，帮助从 `selector 被包装` 进一步理解到 `useSyncExternalStore` 的内部调度职责。
+
+- **docs/前端面试/React.md**：在状态管理相关部分新增 **「状态管理补充：为什么 Redux 常配合 Provider，而 Zustand 通常不需要？」**，系统解释 Redux 核心 store 本身并不依赖 Provider、`react-redux` 为什么要借助 Context / Provider 把 store 分发到组件树，以及 Zustand 为什么常以模块级外部 store + 直接订阅的方式工作，因此默认主路径下通常不需要再额外注入 Provider。
+
+- **docs/前端面试/React.md**：继续修正 Hooks 章节中对“Hook 本质”的表述，新增对“Hook 作为 React 概念的总定义”“React 内置 Hook 的运行时本质”和“自定义 Hook 的封装本质”三层含义的区分，明确自定义 Hook 本质上是一个遵守 Hook 规则、组合已有 Hook 逻辑的普通函数封装，而“按顺序访问 Fiber 上的状态节点”更准确描述的是内置 Hook 的底层机制。
+
+- **docs/前端面试/React.md**：在 Hooks 章节下新增 **「Hooks 深入补充」** 小节，系统补充 Hook 的定义与本质、什么叫“按顺序访问内部状态槽位”、槽位是怎么产生的、为什么 Hook 会和 Fiber 绑定，以及“数组理解”和“链表理解”各自适合解释什么问题，帮助把 Hook 从 API 记忆提升到运行时机制理解层面。
+
+- **docs/前端面试/code/handwritten/react-components/zustand-create-store.tsx**：继续把 Zustand 最小手写实现改写成更适合初学者阅读的“学习文档版”，系统补充 Zustand 解决的问题、`state / listeners / getState / setState / subscribe / useStore(selector)` 各自的职责说明，并在关键位置显式强调它与 Redux 在 `action/reducer` 流程、`setState` 直接更新、是否需要 `Provider`、是否内置 selector 读取模式等方面的差异，方便把该文件直接作为“Zustand 与 Redux 对比入门材料”来阅读。
+
+- **docs/前端面试/code/handwritten/react-components/redux-create-store.js**：继续补强 `replaceReducer` 段落的学习型注释，新增对 `dispatch({ type: '@@redux/REPLACE' })` 的详细解释，说明 `@@redux/...` 属于 Redux 内部常见的 action type 命名风格、`@@` 只是为了让内部 action 与业务 action 更明显地区分开、`REPLACE` 表示“替换 reducer 后立刻触发新 reducer 重新计算 state 结构”，帮助初学者理解“这不是特殊语法，而是 Redux 内部保留命名约定”。
+
+- **docs/前端面试/code/handwritten/react-components/redux-create-store.js**：继续面向初学者补强 Redux 原理说明，在文件开头新增一整段专门解释 `action`、`dispatch`、`reducer` 三者分别是什么、各自负责什么、三者如何串成 `dispatch(action) -> reducer(oldState, action) -> newState` 的更新链路，并用“下订单 / 提交订单 / 按订单做菜”这一类比帮助从概念层面区分“描述变化”“提交变化”“计算新状态”三种不同角色。
+
+- **docs/前端面试/code/handwritten/react-components/zustand-create-store.tsx**：补充 Zustand 风格最小手写实现，覆盖 `getState`、`setState`、`subscribe`、`destroy` 与基于 `useSyncExternalStore` 的 `useStore(selector)`，用于和 Redux `createStore` / `react-redux` 一起对比“轻量外部 store”与“action-reducer 流程式状态管理”的差异。
+- **docs/前端面试/code/handwritten/README.md**、**docs/前端面试/code/README.md**：同步把 `zustand-create-store.tsx` 加入 React Hooks / 组件分类清单和代码目录覆盖说明。
+- **docs/前端面试/code/handwritten/react-hooks/use-context.tsx**：将原本极简的 `useContext` 示例扩写为“学习文档版”，系统补充 `Context` / `Provider` / `useContext` 三者的定义、Provider 为什么必须包裹子树、为什么子组件只能读取祖先路径上的最近 Provider、底层“进入 Provider 保存旧值 -> 写入新值 -> 渲染子树 -> 退出时恢复旧值”的 push / pop 运行过程，并新增 `withProvider` 教学模型来直观演示上下文作用域只在当前 Provider 子树内生效。
+
+- **docs/前端面试/code/handwritten/react-components/redux-create-store.js**：将原本偏“面试答案版”的 `createStore` 手写实现重写为更适合初学者阅读的“学习文档版”，系统补充了 Redux 整体数据流、store / reducer / action / subscribe / dispatch / replaceReducer 各自的职责解释，并在每个关键变量与函数旁增加“为什么要这样设计、这样写在表达什么、为什么 reducer 里不能 dispatch、为什么初始化要主动派发 `@@redux/INIT`”等面向入门者的详细注释，方便把这道手写题当作 Redux 原理入门材料来阅读。
+
+- **docs/前端面试/code/handwritten/dom-browser/**、**react-hooks/**、**react-components/**、**object-function/**：继续自动补齐 DOM / 工程化 / React / Vue 题库，新增 `resize-observer-core.js`、`plugin-runner.js`、`dependency-graph.js`、`vite-plugin-container.js`、`chunk-graph.js`、`use-context.tsx`、`use-imperative-handle.tsx`、`react-forward-ref.tsx`、`react-class-set-state.js`、`react-suspense-resource.js`、`react-error-boundary.js`、`react-portal.js`、`vue-ref.js`、`vue-to-refs.js`、`vue-custom-ref.js`、`vue-define-async-component.js`、`vue-directive-core.js`，进一步覆盖观察器 API、插件运行器、模块依赖图与 chunk 图、Vite 插件容器、React context / imperative handle / forwardRef / class setState / Suspense / ErrorBoundary / Portal，以及 Vue3 `ref` / `toRefs` / `customRef` / 异步组件 / 指令系统等高频或长尾追问题。
+- **docs/前端面试/code/handwritten/README.md**、**docs/前端面试/code/README.md**：同步更新目录总览与覆盖说明，把本轮新增的 DOM / 工程化 / React / Vue 题目继续纳入入口文档。
+
+- **docs/前端面试/code/handwritten/dom-browser/**、**react-components/**、**object-function/**：继续补齐更偏源码追问的 DOM / 工程化 / React / Vue 手写题，新增 `intersection-observer-core.js`、`mutation-observer-core.js`、`tapable-async-series-hook.js`、`source-map-core.js`、`react-hooks-linked-list.js`、`react-scheduler-priority.js`、`vue-watch-effect.js`、`vue-effect-scope.js`、`vue-keep-alive.js`、`vue-provide-inject.js`，进一步覆盖观察器 API、tapable 串行异步钩子、source map 映射思路、React Hooks 链表模型与优先级调度、Vue `watchEffect` / `effectScope` / `keep-alive` / `provide-inject` 等更偏框架底层原理的高频追问题。
+- **docs/前端面试/code/handwritten/README.md**、**docs/前端面试/code/README.md**：同步更新目录总览与覆盖说明，把本轮新增的源码型长尾高频题纳入入口文档。
+
+- **docs/前端面试/code/handwritten/dom-browser/**、**react-hooks/**、**react-components/**、**object-function/**：继续沿 `DOM / 工程化 / React / Vue` 方向补全长尾高频手写题，新增 `dom-patch.js`、`infinite-scroll.js`、`raf-scheduler.js`、`tapable-async-parallel-hook.js`、`loader-runner.js`、`hmr-runtime.js`、`use-layout-effect.tsx`、`react-batched-updates.js`、`react-render-commit.js`、`vue-set-delete.js`、`vue-patch.js`、`pinia-like-store.js`，进一步覆盖 diff 之后的 patch、无限滚动、帧调度、异步 hook、loader 链、HMR 运行时、React layout effect / batched updates / render-commit、Vue2 `set/delete`、Vue patch、Pinia 风格状态管理等常见追问题。
+- **docs/前端面试/code/handwritten/README.md**、**docs/前端面试/code/README.md**：同步更新目录总览与覆盖说明，把本轮新增的 DOM / 工程化 / React / Vue 长尾高频题纳入入口文档。
+
+- **docs/前端面试/code/handwritten/dom-browser/**、**react-hooks/**、**react-components/**、**object-function/**：按“算法不再补，继续补 DOM / 工程化 / React / Vue 高频手写题”的方向，新增 `xhr-core.js`、`jsonp.js`、`hash-router-core.js`、`history-router-core.js`、`mini-webpack-bundler.js`、`tapable-sync-hook.js`、`use-reducer.tsx`、`react-memo.tsx`、`react-fiber-work-loop.js`、`vue-computed.js`、`vue-watch.js`、`vuex-create-store.js`、`vue-router-core.js`，继续补强浏览器请求与路由、工程化运行时与钩子系统、React Hook / Fiber / memo、Vue `computed` / `watch` / `vuex` / `router` 等高频源码型手写题。
+- **docs/前端面试/code/handwritten/README.md**、**docs/前端面试/code/README.md**：同步更新目录总览与覆盖说明，把本轮新增的 DOM / 工程化 / React / Vue 题目纳入入口文档。
+
+- **docs/前端面试/code/handwritten/js-utils/**、**promise-async/**、**dom-browser/**、**react-hooks/**、**code/algorithms/**：继续以“大厂尽可能全覆盖”为目标补题，本轮新增 `array-map.js`、`array-filter.js`、`array-reduce.js`、`promise-reject.js`、`promise-catch.js`、`virtual-dom-diff.js`、`time-slicing-render.js`、`babel-plugin-auto-track.js`、`use-effect.tsx`、`use-sync-external-store.tsx`、`algorithms/search/binary-search.js`、`algorithms/array-string/merge-intervals.js`、`algorithms/array-string/quick-sort.js`，进一步覆盖原生数组方法、Promise 补充 API、最小 diff、时间分片、Babel 插件、React 外部 store 订阅，以及二分 / 合并区间 / 快排等经典算法高频题。
+- **docs/前端面试/code/handwritten/README.md**、**docs/前端面试/code/README.md**、**docs/前端面试/code/algorithms/README.md**：同步更新目录总览与覆盖说明，把本轮新增手写题和算法题纳入入口文档，保证题纲与真实代码目录一致。
+
+- **docs/前端面试/code/handwritten/react-components/**：再次检索近年大厂前端手写题面经后，补上此前遗漏的 Redux 系列高频题，新增 `redux-create-store.js`、`redux-combine-reducers.js`、`redux-apply-middleware.js`、`redux-thunk.js`、`redux-bind-action-creators.js`、`react-redux-hooks.tsx`，把 `createStore -> combineReducers -> applyMiddleware -> thunk -> bindActionCreators -> React Hooks 接入层` 这一整条 Redux 常见追问链路补齐。
+- **docs/前端面试/code/handwritten/README.md**：更新 React Hooks / 组件分类清单，把 Redux 与 `react-redux` 相关新增代码题登记到总览中。
+- **docs/前端面试/code/README.md**：补充当前覆盖说明，新增 Redux 核心 API、Redux 常见追问与 React 接入层的代码覆盖说明。
+
+- **docs/前端面试/code/handwritten/**：基于再次检索近年大厂前端手写题面经，对题库缺口继续补强，新增 `set-interval-with-timeout.js`、`once.js`、`memoize.js`、`template-render.js`、`query-parse-stringify.js`、`thousand-separator.js`、`parallel-task-runner.js`、`pausable-task-queue.js`、`batch-report-queue.js`、`local-storage-ttl.js`、`webpack-plugin-core.js`、`compose-middleware.js`、`use-ref.tsx`、`use-event.tsx`、`use-request.tsx`、`use-state.tsx`、`vue-next-tick.js`、`vue-v-model.js`，进一步覆盖工具函数增强、缓存 / 队列 / 埋点等工程场景、React Hook 原理、Vue `nextTick` / `v-model` 等高频题。
+- **docs/前端面试/code/handwritten/README.md**：再次扩充“已拆分的高频题”清单，把本轮新增的工具函数增强、Promise / 调度、浏览器与工程化、React / Vue 原理题一并登记。
+- **docs/前端面试/code/README.md**：补充当前代码目录覆盖说明，新增本轮补充的工具函数增强题、调度队列题、缓存 / plugin / middleware 工程题，以及 React / Vue 原理题说明。
+
+- **docs/前端面试/code/handwritten/**：按现有手写题目录结构，继续把“大厂补强清单”中的高频题真正拆成可运行代码文件，并在每个文件顶部补齐“实现目标 / 核心思路 / 复杂度 / 易错点 / 面试表达点”等讲解信息；本轮新增 `object-create.js`、`object-assign.js`、`json-stringify.js`、`vue2-define-reactive.js`、`vue3-reactive-effect.js`、`promise-finally.js`、`promise-any.js`、`with-timeout.js`、`exponential-backoff-retry.js`、`serial-task-runner.js`、`priority-scheduler.js`、`lazy-man.js`、`version-compare.js`、`big-number-add.js`、`array-to-tree.js`、`tree-to-flat-list.js`、`vnode-to-dom.js`、`webpack-loader-core.js`、`reconnectable-websocket.js`、`use-memo.tsx`、`use-callback.tsx`。
+- **docs/前端面试/code/handwritten/README.md**：同步更新已拆分题目清单，把上述新增手写题按 `js-utils`、`object-function`、`promise-async`、`data-structures`、`dom-browser`、`react-hooks` 分类登记，确保专题文档与实际代码目录一致。
+- **docs/前端面试/code/README.md**：补充当前覆盖说明，新增对象机制 / 响应式、Promise 调度、数据处理 / 浏览器工程化、React Hook 等新增代码题覆盖范围说明。
+
+- **docs/前端面试/code/handwritten/README.md**：结合近年公开大厂前端面经，对“手写题专题”继续补强，新增 **「十五、根据近年大厂面经应补齐的手写方向」**、**「十六、近年大厂高频补充题库」**、**「十七、不同大厂更常偏好的手写方向」**、**「十八、如果要把题库补得更全面，优先补这 20 题」**，将题库从经典基础题扩展到异步调度、工程化最小实现、React/Vue 原理、业务场景题与数据处理题，提升对字节、腾讯、阿里、美团、京东、快手等公司常见手写题的覆盖面。
+
+- **docs/前端面试/AI应用前端专题.md**：在文末新增 **「十一、从 LLM 原理到工程落地的完整链路」** 专题长文，系统串讲 `LLM` 的本质、`token` 与 `Transformer`、预训练/监督微调/偏好对齐、自回归推理、采样参数、`KV Cache`、幻觉成因、`Prompt`、`RAG`、`Function Calling`、`MCP`、`Agent`、模型网关，以及一次真实 AI 应用从用户输入到前端流式渲染的完整工程链路，并补充前端在 AI 产品中的职责、流式通信、Worker、多线程、评测、监控与安全治理等工程视角。
+- **docs/前端面试/AI应用前端专题.md**：继续细化 `RAG` 部分，在原有“预处理 -> embedding -> 建库 -> 检索 -> rerank -> 生成”主线下，补充原始文本如何经抽取、清洗、结构化、切块、元数据挂载、embedding、向量索引构建，最终变成可高效检索知识；并补充查询阶段的 query 改写、语义召回、重排、上下文拼装，以及“向量只是检索中间表示，真正喂给 `LLM` 的仍是整理后的文本上下文”这一关键原理。
+- **docs/前端面试/AI应用前端专题.md**：继续补强 `LLM` 与 `RAG` 的本质解释，新增“工程拼接文本进入 `LLM` 后并不会被当成单一变量，而是会先经 tokenizer 切成 token 序列，再映射为向量并通过多层 `Transformer` 建模上下文关系”的底层过程说明；同时补充 `embedding model` 与生成模型的区别、同一索引通常应统一 embedding 模型、换模型需重建向量索引、向量库与 `Neo4j` 图数据库在语义召回与关系推理场景下的选型差异，以及 `LlamaIndex`、`LangChain`、`LangGraph`、`Haystack`、`Dify`、`RAGFlow`、`FastGPT`、`Flowise` 等可直接二次开发的常用 `RAG` 框架/平台建议。
+- **docs/前端面试/AI应用前端专题.md**：在 `token` 章节继续新增 `tokenizer` 深挖说明，明确它“不属于 `Transformer` 神经网络本体，但属于 `LLM` 体系中与训练强绑定的基础编码组件”，并补充其与词表、切分算法、特殊 token、上下文长度、推理成本和模型表现之间的关系，解释为什么 tokenizer 既是一种工程技术，又不能被视为可随意替换的外围工具。
+- **docs/前端面试/AI应用前端专题.md**：在“一次推理到底发生了什么”章节下新增更细的模型前向推导链路，系统补充“原始文本 -> token id -> embedding 向量 -> 位置编码 -> 带因果遮罩的 self-attention -> 多层 `Transformer` 上下文化表示 -> 最后位置隐藏状态 -> logits -> softmax/采样 -> 下一个 token -> `KV Cache` 复用”的完整过程，帮助从真正的模型内部计算角度理解 LLM 如何逐 token 生成内容。
+
 ## 2025-03-25
 
 - **docs/前端面试/JavaScript.md**：删除误插入在「五、异步与事件循环」开头的零散笔记；新增 **「十三、异步与 Promise 易错深挖（补充）」**，编号 126–135，收录事件循环与 Promise 的实操判断方式、`setTimeout` 语义、定时器顺序与精度、`then/catch/finally` 非函数入参行为、常见输出题与链式返回新 Promise 等面试口述要点。
@@ -26,3 +109,10 @@
 - **docs/前端面试/小米一面.md**：补充 React 闭包题中 `count` 的本质说明，明确它在当前 render 中只是普通值/快照，不是 React 特有可变对象；并区分“当前闭包里的旧值”与“下一次渲染里的新 state”。
 - **docs/前端面试/小米一面.md**：在 React 闭包题后补充 React 与 Vue 的异步取值对比，说明 Vue 的 `ref/reactive` 更像响应式容器，因此异步回调读取容器当前值时通常能拿到最新状态，但若先解构成普通值也同样会旧。
 - **docs/前端面试/React.md**：新增 **第 123 题**，详细解释函数组件重新执行为什么不等于 DOM 立刻变化，区分 render 阶段负责“重新计算 UI 描述”和 commit 阶段负责“真正提交 DOM 变更”的职责边界。
+- **docs/前端面试/BFF与前端网关.md**：新增 **第 39 题**，用一段高密度总结解释 BFF 的本质，强调其核心是面向前端体验的协议适配、数据聚合与流程编排，而不是取代领域服务本身。
+- **docs/前端面试/小米二面.md**：在 SSE 与 WebSocket 对比处补充“文本流”的精确定义，明确文本流不等于 JSON，JSON 只是 SSE 常见承载内容之一。
+- **docs/前端面试/网络.md**：在原有分层主线后新增一整组“协议运行时与工程实践补充”，系统补齐抓包视角下的数据形态（Ethernet/ARP/IP/TCP/TLS/HTTP/WebSocket/SSE）、前端实际 API 映射、长轮询/SSE/WebSocket 的工程使用方式、请求从 `fetch` 到真实网络的作用过程，以及常见排障抓手与高分面试表达模板。
+- **docs/前端面试/网络.md**：在以太网、ARP、IP、ICMP、DHCP、UDP、TCP、TLS、DNS、HTTP/2、QUIC、WebSocket、SSE 等章节首次出现处补充术语速释，增强对 `FCS`、下一跳、ARP 缓存、MTU、分片、Echo、DORA、面向报文、SYN/ACK/FIN、滑动窗口、前向安全、0-RTT、递归/迭代解析、ALPN、Connection ID、心跳、SSE 字段等名词的就地理解。
+- **docs/前端面试/小米二面.md**：扩写“大模型对话中的 token 技术”部分，补充 tokenizer、上下文拼装、位置编码、KV Cache、RAG 检索链路、embedding/chunk/rerank、tool use 协作闭环、流式 chunk 传输、采样策略及一次真实对话请求的完整 token 视角链路。
+- **docs/前端面试/小米二面.md**：继续补全大模型对话部分的术语解释与英文全称，新增对 `tokenizer`、`BPE`、`SentencePiece`、`RAG`、`embedding`、`chunk`、`rerank`、`schema`、`orchestrator`、`KV Cache`、`logits`、`nucleus sampling`、`top-k`、`frequency penalty`、`presence penalty` 等名词的就地说明。
+- **docs/前端面试/小米二面.md**：继续补齐大模型对话部分剩余缺失术语，新增对 `few-shot`、条件分布、`query`/query 改写、混合检索、结构化输出、副作用、幻觉等概念的就地解释，增强非 AI 背景读者的可读性。

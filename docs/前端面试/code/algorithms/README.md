@@ -35,11 +35,11 @@
 
 ### 已拆分的高频题
 
-- 数组 / 字符串 / 双指针：`two-sum.js`、`two-sum-sorted.js`、`remove-duplicates-sorted-array.js`、`three-sum.js`、`container-with-most-water.js`、`trapping-rain-water.js`、`longest-substring-without-repeat.js`、`min-window-substring.js`、`longest-palindromic-substring.js`
+- 数组 / 字符串 / 双指针：`two-sum.js`、`two-sum-sorted.js`、`remove-duplicates-sorted-array.js`、`three-sum.js`、`container-with-most-water.js`、`trapping-rain-water.js`、`longest-substring-without-repeat.js`、`min-window-substring.js`、`longest-palindromic-substring.js`、`merge-intervals.js`、`quick-sort.js`
 - 链表：`reverse-linked-list.js`、`merge-two-sorted-lists.js`、`merge-two-sorted-arrays.js`、`has-cycle.js`、`detect-cycle-entry.js`、`remove-nth-node-from-end.js`、`swap-pairs.js`、`reverse-k-group.js`
 - 栈 / 队列 / 哈希：`valid-parentheses.js`、`min-stack.js`、`implement-queue-using-stacks.js`、`implement-stack-using-queues.js`、`daily-temperatures.js`、`largest-rectangle-in-histogram.js`、`sliding-window-maximum.js`、`group-anagrams.js`、`longest-consecutive-sequence.js`
 - 树：`binary-tree-preorder-traversal.js`、`binary-tree-inorder-traversal.js`、`binary-tree-postorder-traversal.js`、`binary-tree-level-order.js`、`binary-tree-max-depth.js`、`binary-tree-min-depth.js`、`is-symmetric-tree.js`、`is-balanced-binary-tree.js`、`lowest-common-ancestor.js`、`serialize-and-deserialize-binary-tree.js`、`path-sum.js`
-- 搜索 / 回溯 / 图：`search-insert-position.js`、`search-range.js`、`search-rotated-array.js`、`permutations.js`、`subsets.js`、`combination-sum.js`、`n-queens.js`、`number-of-islands.js`、`rotting-oranges.js`、`course-schedule.js`
+- 搜索 / 回溯 / 图：`binary-search.js`、`search-insert-position.js`、`search-range.js`、`search-rotated-array.js`、`permutations.js`、`subsets.js`、`combination-sum.js`、`n-queens.js`、`number-of-islands.js`、`rotting-oranges.js`、`course-schedule.js`
 - DP / 贪心 / 堆：`climb-stairs.js`、`house-robber.js`、`longest-increasing-subsequence.js`、`longest-common-subsequence.js`、`coin-change.js`、`edit-distance.js`、`jump-game.js`、`kth-largest-element.js`、`top-k-frequent-elements.js`、`merge-k-sorted-lists.js`
 
 ---

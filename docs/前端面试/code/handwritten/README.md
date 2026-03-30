@@ -33,12 +33,12 @@
 
 ### 已拆分的高频题
 
-- JavaScript 工具函数：`debounce-basic.js`、`debounce-immediate.js`、`debounce-with-cancel.js`、`throttle-basic.js`、`throttle-leading-trailing.js`、`array-flatten.js`、`array-unique.js`、`compose.js`、`curry.js`、`group-by.js`、`publish-subscribe.js`
-- 对象与函数机制：`my-call.js`、`my-apply.js`、`my-bind.js`、`my-new.js`、`my-instanceof.js`、`deep-clone.js`、`object-flatten.js`、`object-get.js`
-- Promise 与异步控制：`simple-promise.js`、`promise-resolve.js`、`promise-all.js`、`promise-all-settled.js`、`promise-race.js`、`concurrency-limiter.js`、`request-pool.js`、`retry-request.js`、`cancellable-request.js`
-- 数据结构：`lru-cache.js`、`event-bus.js`、`queue.js`、`stack.js`、`priority-queue.js`、`tree-dfs.js`、`tree-bfs.js`
-- DOM 与浏览器：`get-elements-by-class-name.js`、`event-delegation.js`、`image-lazy-load.js`、`drag-sort-minimal.js`、`large-file-upload-core.js`
-- React Hooks / 组件：`use-debounce.tsx`、`use-throttle.tsx`、`use-counter.tsx`、`use-previous.tsx`、`use-latest.tsx`、`use-interval.tsx`、`simple-global-store.tsx`、`controlled-input.tsx`、`simple-virtual-list.tsx`、`dynamic-virtual-list.tsx`
+- JavaScript 工具函数：`debounce-basic.js`、`debounce-immediate.js`、`debounce-with-cancel.js`、`throttle-basic.js`、`throttle-leading-trailing.js`、`array-flatten.js`、`array-unique.js`、`array-map.js`、`array-filter.js`、`array-reduce.js`、`compose.js`、`curry.js`、`group-by.js`、`publish-subscribe.js`、`set-interval-with-timeout.js`、`once.js`、`memoize.js`、`template-render.js`、`query-parse-stringify.js`、`version-compare.js`、`big-number-add.js`、`thousand-separator.js`
+- 对象与函数机制：`my-call.js`、`my-apply.js`、`my-bind.js`、`my-new.js`、`my-instanceof.js`、`deep-clone.js`、`object-flatten.js`、`object-get.js`、`object-create.js`、`object-assign.js`、`json-stringify.js`、`vue2-define-reactive.js`、`vue3-reactive-effect.js`、`vue-ref.js`、`vue-to-refs.js`、`vue-custom-ref.js`、`vue-next-tick.js`、`vue-v-model.js`、`vue-computed.js`、`vue-watch.js`、`vue-watch-effect.js`、`vue-effect-scope.js`、`vue-set-delete.js`、`vue-patch.js`、`vuex-create-store.js`、`vue-router-core.js`、`vue-keep-alive.js`、`vue-provide-inject.js`、`vue-define-async-component.js`、`vue-directive-core.js`、`pinia-like-store.js`
+- Promise 与异步控制：`simple-promise.js`、`promise-resolve.js`、`promise-reject.js`、`promise-catch.js`、`promise-all.js`、`promise-all-settled.js`、`promise-race.js`、`concurrency-limiter.js`、`request-pool.js`、`retry-request.js`、`cancellable-request.js`、`promise-finally.js`、`promise-any.js`、`with-timeout.js`、`exponential-backoff-retry.js`、`serial-task-runner.js`、`parallel-task-runner.js`、`priority-scheduler.js`、`pausable-task-queue.js`、`batch-report-queue.js`、`lazy-man.js`
+- 数据结构：`lru-cache.js`、`event-bus.js`、`queue.js`、`stack.js`、`priority-queue.js`、`tree-dfs.js`、`tree-bfs.js`、`array-to-tree.js`、`tree-to-flat-list.js`
+- DOM 与浏览器：`get-elements-by-class-name.js`、`event-delegation.js`、`image-lazy-load.js`、`drag-sort-minimal.js`、`large-file-upload-core.js`、`vnode-to-dom.js`、`virtual-dom-diff.js`、`dom-patch.js`、`xhr-core.js`、`jsonp.js`、`hash-router-core.js`、`history-router-core.js`、`infinite-scroll.js`、`intersection-observer-core.js`、`mutation-observer-core.js`、`resize-observer-core.js`、`raf-scheduler.js`、`time-slicing-render.js`、`babel-plugin-auto-track.js`、`mini-webpack-bundler.js`、`tapable-sync-hook.js`、`tapable-async-parallel-hook.js`、`tapable-async-series-hook.js`、`loader-runner.js`、`plugin-runner.js`、`vite-plugin-container.js`、`dependency-graph.js`、`chunk-graph.js`、`hmr-runtime.js`、`source-map-core.js`、`local-storage-ttl.js`、`webpack-loader-core.js`、`webpack-plugin-core.js`、`compose-middleware.js`、`reconnectable-websocket.js`
+- React Hooks / 组件：`use-debounce.tsx`、`use-throttle.tsx`、`use-counter.tsx`、`use-previous.tsx`、`use-latest.tsx`、`use-interval.tsx`、`use-effect.tsx`、`use-layout-effect.tsx`、`use-memo.tsx`、`use-callback.tsx`、`use-ref.tsx`、`use-context.tsx`、`use-event.tsx`、`use-request.tsx`、`use-reducer.tsx`、`use-imperative-handle.tsx`、`use-state.tsx`、`use-sync-external-store.tsx`、`simple-global-store.tsx`、`redux-create-store.js`、`redux-combine-reducers.js`、`redux-apply-middleware.js`、`redux-thunk.js`、`redux-bind-action-creators.js`、`react-redux-hooks.tsx`、`zustand-create-store.tsx`、`react-forward-ref.tsx`、`react-memo.tsx`、`react-fiber-work-loop.js`、`react-hooks-linked-list.js`、`react-scheduler-priority.js`、`react-batched-updates.js`、`react-render-commit.js`、`react-class-set-state.js`、`react-suspense-resource.js`、`react-error-boundary.js`、`react-portal.js`、`controlled-input.tsx`、`simple-virtual-list.tsx`、`dynamic-virtual-list.tsx`
 
 ---
 
@@ -503,3 +503,179 @@
 - 写完后能自己口头做一遍测试用例
 - 面试官追问升级版时，不会完全卡住
 - 能讲清“为什么这样写”，而不是只背模板
+
+---
+
+## 十五、根据近年大厂面经应补齐的手写方向
+
+只练防抖、节流、`Promise.all`、深拷贝，已经不够覆盖近两年的大厂前端手写题了。
+
+从近年公开面经来看，字节、腾讯、阿里、美团、京东、快手这类公司更常把手写题往下面 4 个方向继续追问：
+
+1. 从“单个 API 手写”升级到“完整异步链路手写”
+2. 从“工具函数”升级到“场景调度题”
+3. 从“基础 JavaScript”升级到“框架原理最小实现”
+4. 从“八股解释题”升级到“工程化最小可运行题”
+
+也就是说，现在更常见的不是单独问你“会不会写防抖”，而是继续追问：
+
+- 能不能补 `cancel`、`flush`、返回值、立即执行
+- 能不能把多个异步任务做成请求池、重试器、超时控制器
+- 能不能把 Hook、响应式、虚拟 DOM 讲到最小实现层
+- 能不能写出一个简化版 loader / plugin / 埋点队列 / 缓存队列
+
+如果你想把题库练到更接近大厂真实面试，下面这批题建议补齐。
+
+## 十六、近年大厂高频补充题库
+
+下面这些题，不一定每家公司都会问，但在公开面经里反复出现，明显属于“应该进入训练池”的题。
+
+### 1. JavaScript 机制与工具函数增强
+
+63. 手写 `Object.create`
+64. 手写 `Object.assign`
+65. 手写简化版 `JSON.stringify`
+66. 手写 `setInterval`，底层只用 `setTimeout`
+67. 手写 `once`
+68. 手写 `memoize`
+69. 手写模板字符串渲染，例如 `template('hi {{name}}')`
+70. 手写 query 解析与序列化
+71. 手写版本号比较
+72. 手写大数相加
+73. 手写千分位格式化
+74. 手写数组转树
+75. 手写树转扁平数组
+76. 手写扁平数组转树形结构
+
+### 2. Promise、调度与异步场景增强
+
+77. 手写 `Promise.finally`
+78. 手写 `Promise.any`
+79. 手写带超时控制的异步包装器，例如 `withTimeout`
+80. 手写指数退避重试
+81. 手写串行任务执行器
+82. 手写并行任务执行器
+83. 手写 `LazyMan`
+84. 手写优先级调度器
+85. 手写支持暂停 / 恢复的任务队列
+86. 手写带并发上限、失败重试、取消能力的请求池升级版
+87. 手写带重连的 `WebSocket` 封装
+88. 手写批量上报埋点队列
+
+### 3. DOM、浏览器与工程化最小实现
+
+89. 手写虚拟 DOM 转真实 DOM
+90. 手写最小版 diff 思路
+91. 手写简化版事件总线，支持 `on` / `off` / `emit` / `once`
+92. 手写图片预加载器或资源加载器
+93. 手写本地缓存封装，支持过期时间
+94. 手写前端分页缓存或内存缓存策略
+95. 手写大文件上传增强版，支持切片、重试、续传、并发控制
+96. 手写简化版 `Webpack loader`
+97. 手写简化版 `Webpack plugin`
+98. 手写 `compose(middleware)` 风格中间件调度器
+
+### 4. React / Vue / 框架原理高频手写
+
+99. 手写 `useMemo`
+100. 手写 `useCallback`
+101. 手写 `useRef`
+102. 手写 `useRequest`
+103. 手写稳定回调 Hook，例如 `useEvent`
+104. 手写简化版 `useState` / Hook 调度原理
+105. 手写简化版全局状态管理，支持订阅与选择器
+106. 手写 Vue2 `defineProperty` 响应式
+107. 手写 Vue3 `reactive` / `effect` 最小版
+108. 手写 `nextTick`
+109. 手写 `v-model`
+110. 手写简化版发布订阅驱动的响应式更新
+
+### 5. 算法与业务数据处理补充
+
+111. 手写快速排序
+112. 手写二分查找
+113. 手写二叉树前序 / 中序 / 后序非递归遍历
+114. 手写层序遍历
+115. 手写合并区间
+116. 手写 Top K
+117. 手写最近公共祖先
+118. 手写岛屿数量或图搜索
+119. 手写括号有效性判断
+120. 手写滑动窗口最大值
+
+### 这一批题为什么值得补
+
+- 它们比“纯 API 模拟题”更接近真实业务和源码思路
+- 它们更容易被面试官拿来做追问和升级
+- 它们能明显区分“看过题”和“真正能写、能讲、能扩展”的候选人
+
+## 十七、不同大厂更常偏好的手写方向
+
+下面不是绝对规则，但从公开面经看，确实有比较明显的出题倾向：
+
+### 字节跳动常见方向
+
+- 并发控制、请求池、调度器、`LazyMan`
+- Hook 手写、闭包与依赖问题
+- 虚拟列表、海量数据渲染
+- `Webpack loader` / `plugin`、中间件调度器
+- Vue 响应式、虚拟 DOM、diff 最小思路
+
+### 腾讯常见方向
+
+- `Promise.all`、`race`、`finally`、并发池
+- LRU、事件总线、树遍历、数组转树
+- 深拷贝、`bind`、`new`、原型链相关实现
+- 虚拟 DOM 转真实 DOM
+- 大数相加、版本号比较、字符串处理
+
+### 阿里常见方向
+
+- `call` / `apply` / `bind` / `new` / `instanceof`
+- 深拷贝及类型边界处理
+- 函数组合、柯里化、模板渲染
+- diff、响应式、工程化底层原理
+- 缓存、性能优化、数据结构题
+
+### 美团常见方向
+
+- 虚拟列表、长列表性能优化
+- 请求池、重试、取消、超时控制
+- 大文件上传、断点续传
+- 事件循环、任务调度、监控上报
+- Hook 场景题和工程化实战题
+
+### 京东、快手、小红书等常见方向
+
+- 防抖 / 节流升级版
+- `Promise` 组合题与异步顺序题
+- `LazyMan`、版本比较、query 解析
+- 数组转树、树转数组、扁平化
+- `WebSocket` 封装、埋点队列、缓存封装
+
+## 十八、如果要把题库补得更全面，优先补这 20 题
+
+如果时间有限，我建议把下面 20 题作为“大厂补强清单”优先拿下：
+
+1. `Promise.finally`
+2. `Promise.any`
+3. 带超时控制的异步包装器
+4. 指数退避重试
+5. 串行任务执行器
+6. 优先级调度器
+7. `LazyMan`
+8. `Object.create`
+9. `Object.assign`
+10. 简化版 `JSON.stringify`
+11. 数组转树
+12. 树转扁平数组
+13. 版本号比较
+14. 大数相加
+15. 虚拟 DOM 转真实 DOM
+16. 简化版 `Webpack loader`
+17. `useMemo`
+18. `useCallback`
+19. Vue3 `reactive` / `effect`
+20. 带重连的 `WebSocket` 封装
+
+这 20 题补进去之后，你的手写题库会从“常规前端题库”提升到“更接近近年大厂实战面试覆盖面”的水平。
