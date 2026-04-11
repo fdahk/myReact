@@ -1,12 +1,1026 @@
 # record
 Flutter 的样式系统特点：
-
+ 
 1. **一体化**：不需要分离的 HTML/CSS，所有样式都在 Dart 代码中
 2. **类型安全**：编译时检查，减少样式错误
 3. **组件化**：每个 Widget 都包含结构和样式
 4. **响应式**：内置响应式设计支持
 5. **主题化**：统一的主题管理系统
 6. **性能优化**：编译时优化，运行时高效
+
+# Flutter 工程如何和 iOS / Android 原生代码协同
+
+很多人会把 Flutter 理解成“跨平台后就不需要原生了”，这其实不准确。
+
+更准确的说法是：
+
+- `Flutter` 负责用 `Dart` 描述 UI、状态和业务逻辑。
+- `iOS` / `Android` 原生工程负责把 `Flutter Engine` 跑起来，并继续承担操作系统入口、生命周期、权限、系统能力接入、原生 SDK 接入等职责。
+- 所以一个 Flutter App 本质上不是“脱离原生独立存在”，而是“运行在原生宿主里的跨平台业务层”。
+
+---
+
+## 一、先建立整体认知：Flutter 从来不是单独运行的
+
+一个 Flutter 项目里，通常至少会同时存在这些层：
+
+### 1. Dart / Flutter 层
+
+- 你的页面、状态管理、路由、网络请求、业务逻辑都主要写在这里。
+- 这一层最终会被编译成 Dart AOT 产物，并由 `Flutter Engine` 执行。
+
+### 2. Flutter Engine 层
+
+- 这是 Flutter 的运行时引擎。
+- 负责启动 Dart isolate、管理消息循环、调度渲染、文本布局、图片解码、平台消息转发等。
+- 渲染层以前主要依赖 `Skia`，现在在很多场景下也会用 `Impeller`。
+
+### 3. 原生宿主层（Host App）
+
+- `iOS` 侧是 `Runner.xcodeproj` / `Runner.xcworkspace`、`AppDelegate.swift`、`Info.plist`、各类 `entitlements`、原生 framework、Extension Target。
+- `Android` 侧是 `android/app` 下的 `MainActivity.kt`、`AndroidManifest.xml`、`build.gradle`、`Application`、`Service`、`BroadcastReceiver`、`ContentProvider` 等。
+- 这层负责接住操作系统提供的能力。
+
+### 4. 操作系统层
+
+- 比如 `UIKit` / `ActivityKit` / `WidgetKit` / `CoreBluetooth` / `CallKit`。
+- 或者 `Android SDK` 里的 `AppWidgetProvider`、`Foreground Service`、`MediaSession`、`Bluetooth`、`Camera2`、`Health Connect`。
+
+一句话总结：
+
+`Flutter 不是绕开原生系统，而是通过原生宿主去使用系统能力。`
+
+---
+
+## 二、Flutter 和原生协同的几种主流方式
+
+### 1. 直接使用现成插件
+
+最常见的方式不是你自己写 Swift / Kotlin，而是使用别人已经封装好的 Flutter plugin。
+
+比如：
+
+- `camera`
+- `geolocator`
+- `firebase_messaging`
+- `webview_flutter`
+
+这些插件之所以能工作，不是因为 Flutter 自己“天然会拍照、定位、推送”，而是因为插件内部已经帮你写好了：
+
+- `Dart API`
+- `iOS` 原生实现
+- `Android` 原生实现
+- `Platform Channel` 通信桥
+
+也就是说：
+
+`你没写原生代码，不代表项目没有依赖原生代码；只是原生部分被插件作者提前封装好了。`
+
+### 2. 自己写 Platform Channel
+
+当现成插件不够用时，最常见的做法就是自己写平台通道。
+
+常用通道类型：
+
+- `MethodChannel`：Dart 调原生，适合请求-响应式调用
+- `EventChannel`：原生持续向 Dart 推送事件
+- `BasicMessageChannel`：双向传递结构化消息
+
+适用场景：
+
+- 调用系统 API
+- 接第三方原生 SDK
+- 调用原生页面或原生能力
+- 把原生异步事件回传给 Flutter
+
+### 3. Platform View / Texture
+
+有些场景不是“调用一个原生方法”就够了，而是必须把原生控件真正嵌进 Flutter 页面里。
+
+典型场景：
+
+- 地图
+- 相机预览
+- 视频播放器
+- WebView
+- 某些厂商只提供原生 View 的风控 / 人脸识别组件
+
+这时会用到：
+
+- `PlatformView`
+- `Texture`
+
+本质是：
+
+- Flutter 页面仍由 Dart 驱动
+- 但某一块区域交给原生 View 自己绘制
+
+### 4. FFI
+
+如果你要接的是 `C` / `C++` 动态库，而不是 iOS / Android 的高级平台 API，可以走 `FFI`。
+
+适用场景：
+
+- 音视频编解码库
+- 图像处理库
+- 加密库
+- 算法 SDK
+
+但要注意：
+
+- `FFI` 更适合调本地动态库
+- 它不能直接替代 `UIKit`、`ActivityKit`、`AppWidgetProvider` 这类平台对象模型
+
+所以：
+
+- 调系统平台能力，优先是 `Platform Channel`
+- 调 `C/C++` 动态库，优先是 `FFI`
+
+---
+
+## 三、一次 Flutter 调原生方法，底层到底发生了什么
+
+以 `MethodChannel` 为例，一次调用的链路可以理解为：
+
+```text
+Flutter Widget 点击事件
+-> Dart 代码调用 MethodChannel.invokeMethod()
+-> BinaryMessenger 把消息编码后发给 Flutter Engine
+-> Engine 把消息转给当前平台的 Embedder
+-> iOS / Android 原生侧收到 channel 消息
+-> 原生代码调用系统 API 或第三方原生 SDK
+-> 原生把结果再通过 channel 回给 Engine
+-> Engine 把结果解码回 Dart Future
+-> Flutter 页面拿到结果后 setState / 更新状态
+```
+
+这里面有几个关键点：
+
+### 1. 通信不是“直接函数调用”，而是跨运行时消息传递
+
+因为 Dart 和 Swift / Kotlin 不在同一个语言运行时里，所以不可能像普通函数那样直接互调。
+
+它们之间是：
+
+- Dart 先把参数编码
+- Engine 转发消息
+- 原生侧解码处理
+- 结果再编码返回
+
+默认常见的是 `StandardMethodCodec`，它可以处理：
+
+- `null`
+- `bool`
+- `int`
+- `double`
+- `String`
+- `List`
+- `Map`
+
+如果传复杂对象，通常要：
+
+- 手动转成 `Map`
+- 或者使用 `Pigeon` 自动生成类型安全桥接代码
+
+### 2. Flutter Engine 只是桥，不是系统能力本身
+
+Engine 不会替你“实现蓝牙、推送、锁屏卡片、小组件”。
+
+它只是把：
+
+- Dart 世界的调用
+- 转给原生世界
+
+真正执行能力的仍然是原生 API。
+
+### 3. 异步边界非常重要
+
+很多原生能力是异步的，比如：
+
+- 权限弹窗
+- 蓝牙扫描
+- 支付回调
+- 定位更新
+- 推送 token 下发
+
+所以在 Dart 侧通常表现为：
+
+- `Future`
+- `Stream`
+
+而在原生侧通常表现为：
+
+- callback
+- delegate
+- listener
+- completion handler
+
+---
+
+## 四、Flutter 侧工程通常如何和原生工程分工
+
+一个成熟项目里，比较常见的分工是：
+
+### Flutter 负责
+
+- 跨平台 UI
+- 页面跳转
+- 业务状态管理
+- 接口请求
+- 绝大多数交互逻辑
+- 埋点封装
+- 跨平台业务组件
+
+### 原生负责
+
+- App 启动入口
+- 平台权限声明与工程配置
+- 深度系统能力
+- 原生第三方 SDK 接入
+- Extension / Widget / Service / Receiver 这类系统组件
+- 平台特有生命周期
+- 与系统桌面、锁屏、通知中心、动态岛、后台机制对接
+
+很多团队会采用下面这种目录和职责划分思路：
+
+```text
+lib/
+  services/native_bridge/
+    native_channel.dart      // Flutter -> 原生桥接封装
+    native_models.dart       // 通信参数模型
+ios/
+  Runner/
+    AppDelegate.swift
+    NativeBridgePlugin.swift
+  OrderLiveActivityExtension/
+    OrderLiveActivity.swift
+android/
+  app/src/main/kotlin/...
+    MainActivity.kt
+    widget/OrderWidgetProvider.kt
+    bridge/NativeBridgePlugin.kt
+```
+
+这样做的核心目的，是把“跨平台业务逻辑”和“平台差异实现”拆开。
+
+---
+
+## 五、什么时候必须写原生文件，不能只写 Dart
+
+这部分是重点。
+
+不是“只要和系统打交道就一定要自己写原生”，而是要分情况：
+
+### 情况 1：已经有成熟插件，而且能力完全够用
+
+这种情况通常不需要你自己写 Swift / Kotlin。
+
+比如：
+
+- 常规相机调用
+- 基础定位
+- 文件选择
+- 普通推送
+- WebView
+
+你仍然依赖原生实现，但原生代码已经在插件里。
+
+### 情况 2：没有可用插件，或者插件只覆盖了 60% 能力
+
+这时你通常必须补原生实现。
+
+典型情况：
+
+- 某个新系统 API 刚发布，插件还没跟上
+- 业务需要高级参数，但现有插件没暴露
+- 插件不维护了
+- 插件和你当前工程冲突
+
+### 情况 3：能力必须运行在 Flutter 引擎之外
+
+这类场景最典型，也最容易“必须写原生”。
+
+因为这些能力根本不是在 Flutter 页面里运行的，而是在系统自己的组件或别的进程里运行：
+
+- iOS `Widget Extension`
+- iOS `Live Activities`
+- iOS `App Intent`
+- Android `App Widget`
+- Android `Foreground Service`
+- Android `BroadcastReceiver`
+- Android `ContentProvider`
+
+这类能力的共同点是：
+
+- 它们的入口不是 Flutter Widget 树
+- 它们由系统直接拉起
+- 它们通常要求特定的工程结构、清单声明、Target、Manifest、XML、Entitlement
+
+所以只写 Dart 不够，必须补原生文件。
+
+### 情况 4：你要接的是纯原生第三方 SDK
+
+比如：
+
+- 银行安全控件
+- 厂商人脸识别 SDK
+- 车机连接 SDK
+- 医疗设备蓝牙 SDK
+- 某些企业 IM / 音视频原生 SDK
+
+如果对方只提供：
+
+- `CocoaPods` / `Swift Package`
+- `AAR` / `Maven`
+- `XCFramework`
+
+那你就必须写原生桥接层。
+
+### 情况 5：需要平台级工程配置，不只是代码调用
+
+即使业务逻辑主要写在 Flutter，也常常必须改原生工程文件：
+
+- `Info.plist`
+- `AndroidManifest.xml`
+- `entitlements`
+- `Podfile`
+- `build.gradle`
+- 后台模式配置
+- URL Scheme
+- Notification / Associated Domains / App Groups
+
+这类需求严格来说不一定需要“大量原生业务代码”，但一定需要原生工程配合。
+
+### 一个实用判断标准
+
+可以用一句话快速判断：
+
+`如果这个能力要么运行在 Flutter 引擎外，要么依赖 Flutter 生态里没有封装好的原生 SDK / 系统组件，那么大概率就必须写原生文件。`
+
+---
+
+## 六、iOS 真实案例：外卖 / 打车订单的 Live Activities 与 Dynamic Island
+
+这是一个非常典型、也非常真实的“必须写 Swift”场景。
+
+### 1. 业务需求是什么
+
+假设你在做：
+
+- 外卖 App
+- 打车 App
+- 赛事直播 App
+
+业务希望在 iPhone 锁屏和 Dynamic Island 上持续显示订单 / 行程状态，比如：
+
+- 骑手已接单
+- 预计 8 分钟送达
+- 骑手距离你还有 1.2km
+- 订单已送达
+
+### 2. 为什么这件事不能只靠 Flutter 完成
+
+因为这不是普通页面 UI。
+
+它依赖的是 iOS 的：
+
+- `ActivityKit`
+- `WidgetKit`
+- `SwiftUI`
+- Widget Extension Target
+
+而 Live Activity 的展示区域：
+
+- 锁屏
+- Dynamic Island
+
+都不是 Flutter 自己的渲染表面。
+
+更关键的是：
+
+- 展示 UI 的代码运行在系统管理的扩展环境里
+- 不是运行在 Flutter Widget 树里
+- 不是运行在 Dart isolate 里
+
+所以即使你的主业务页面全部是 Flutter，Live Activity 这一块也必须有原生实现。
+
+### 3. 工程上通常要加哪些原生内容
+
+至少会有这些：
+
+- 新增一个 iOS Widget Extension Target
+- 新增 `ActivityAttributes` 定义
+- 新增 SwiftUI 视图描述锁屏 / Dynamic Island 的布局
+- 配置 `Capabilities`
+- 可能需要 `App Groups`
+- 如果支持远程更新，还要接入 APNs 的 Live Activity push
+
+### 4. 一个典型实现流程
+
+#### 第一步：Flutter 页面发起“开始展示订单进度”
+
+Flutter 侧通常只负责发起命令：
+
+```dart
+import 'package:flutter/services.dart';
+
+class OrderLiveActivityBridge {
+  static const MethodChannel _channel =
+      MethodChannel('order_live_activity');
+
+  static Future<String?> start({
+    required String orderId,
+    required String status,
+    required String etaText,
+  }) async {
+    return _channel.invokeMethod<String>('startActivity', {
+      'orderId': orderId,
+      'status': status,
+      'etaText': etaText,
+    });
+  }
+
+  static Future<void> update({
+    required String activityId,
+    required String status,
+    required String etaText,
+  }) async {
+    await _channel.invokeMethod('updateActivity', {
+      'activityId': activityId,
+      'status': status,
+      'etaText': etaText,
+    });
+  }
+
+  static Future<void> end(String activityId) async {
+    await _channel.invokeMethod('endActivity', {
+      'activityId': activityId,
+    });
+  }
+}
+```
+
+Flutter 做的事情本质上只是：
+
+- 把业务数据传给 iOS
+- 告诉 iOS “开始 / 更新 / 结束一个 Live Activity”
+
+真正创建系统锁屏卡片的，不是 Flutter。
+
+#### 第二步：iOS 原生注册 MethodChannel
+
+可以放在 `AppDelegate.swift` 或独立插件文件里：
+
+```swift
+import ActivityKit
+import Flutter
+import UIKit
+
+@main
+@objc class AppDelegate: FlutterAppDelegate {
+  override func application(
+    _ application: UIApplication,
+    didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
+  ) -> Bool {
+    let controller = window?.rootViewController as! FlutterViewController
+    let channel = FlutterMethodChannel(
+      name: "order_live_activity",
+      binaryMessenger: controller.binaryMessenger
+    )
+
+    channel.setMethodCallHandler { call, result in
+      switch call.method {
+      case "startActivity":
+        // 解析参数并调用 ActivityKit
+        result("activity-id-from-ios")
+      case "updateActivity":
+        result(nil)
+      case "endActivity":
+        result(nil)
+      default:
+        result(FlutterMethodNotImplemented)
+      }
+    }
+
+    return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+  }
+}
+```
+
+#### 第三步：定义 Activity 的数据模型
+
+```swift
+import ActivityKit
+
+struct OrderAttributes: ActivityAttributes {
+  public struct ContentState: Codable, Hashable {
+    var status: String
+    var etaText: String
+  }
+
+  var orderId: String
+}
+```
+
+这里要区分两个层次：
+
+- `Attributes`：相对稳定的基础信息，比如 `orderId`
+- `ContentState`：会频繁变化的动态信息，比如状态、倒计时、距离
+
+#### 第四步：真正调用 ActivityKit 创建系统活动
+
+```swift
+import ActivityKit
+
+@available(iOS 16.1, *)
+enum LiveActivityManager {
+  static func start(orderId: String, status: String, etaText: String) throws -> String {
+    let attributes = OrderAttributes(orderId: orderId)
+    let state = OrderAttributes.ContentState(status: status, etaText: etaText)
+    let activity = try Activity<OrderAttributes>.request(
+      attributes: attributes,
+      content: .init(state: state, staleDate: nil),
+      pushType: nil
+    )
+    return activity.id
+  }
+}
+```
+
+此时系统会登记一个 Live Activity 实例，并在锁屏 / Dynamic Island 上托管显示它。
+
+#### 第五步：在 Widget Extension 中声明 UI
+
+```swift
+import ActivityKit
+import SwiftUI
+import WidgetKit
+
+struct OrderLiveActivityWidget: Widget {
+  var body: some WidgetConfiguration {
+    ActivityConfiguration(for: OrderAttributes.self) { context in
+      VStack(alignment: .leading) {
+        Text("Order \(context.attributes.orderId)")
+        Text(context.state.status)
+        Text(context.state.etaText)
+      }
+    } dynamicIsland: { context in
+      DynamicIsland {
+        DynamicIslandExpandedRegion(.center) {
+          Text(context.state.status)
+        }
+      } compactLeading: {
+        Text("ETA")
+      } compactTrailing: {
+        Text(context.state.etaText)
+      } minimal: {
+        Text("Go")
+      }
+    }
+  }
+}
+```
+
+注意：
+
+- 这段 UI 不是 Flutter 写的
+- 这段 UI 也不会进入 Flutter 的 build / layout / paint 流程
+- 它是 SwiftUI 交给 `WidgetKit` / `ActivityKit` 的系统托管视图
+
+#### 第六步：更新和结束
+
+当订单状态变化时，原生代码调用：
+
+```swift
+await activity.update(using: newState)
+await activity.end(nil, dismissalPolicy: .immediate)
+```
+
+Flutter 只需要继续通过 `MethodChannel` 把新状态传给原生即可。
+
+### 5. 底层运行原理到底是什么
+
+这个过程可以拆成两条链路：
+
+#### 链路 A：主 App 发起创建
+
+```text
+Flutter 页面点击 / 接口返回订单状态
+-> Dart 调 MethodChannel
+-> App 进程里的 iOS 原生代码收到消息
+-> 原生调用 ActivityKit.request()
+-> iOS 系统登记一个 Live Activity
+```
+
+#### 链路 B：系统托管展示和刷新
+
+```text
+系统读取 Activity 当前状态
+-> 调用 Widget Extension 中的 SwiftUI 配置
+-> 生成锁屏 / Dynamic Island 展示内容
+-> 用户在锁屏或动态岛看到内容
+```
+
+关键理解点：
+
+- 主业务页面在 Flutter 里
+- 但锁屏卡片 UI 并不在 Flutter 引擎里渲染
+- 它是系统拿着你的原生配置去展示
+
+这就是为什么：
+
+`Live Activities 是“Flutter 可触发，但必须原生承接”的典型能力。`
+
+### 6. 如果还要支持服务端远程刷新，会怎么跑
+
+更真实的线上版本通常还会这样做：
+
+```text
+服务端订单状态变化
+-> 服务端向 APNs 发送 Live Activity Push
+-> iPhone 收到特定 push
+-> 系统更新 Live Activity 状态
+-> Widget Extension 重新生成展示内容
+```
+
+这种模式下，即使 Flutter 页面没开着，锁屏卡片也还能更新。
+
+而这再次说明：
+
+这类能力不是 Flutter 页面存活时才成立，它本来就是系统级能力。
+
+---
+
+## 七、Android 真实案例：桌面 App Widget 小组件
+
+这也是一个非常常见且必须写原生的能力。
+
+### 1. 业务需求是什么
+
+假设你在做：
+
+- 待办 App
+- 电商 App
+- 内容 App
+- 运营看板 App
+
+业务希望用户把一个“小组件”加到 Android 桌面上，直接展示：
+
+- 今日待办数量
+- 订单待处理数
+- 今日销售额
+- 一键快捷进入某个页面
+
+### 2. 为什么不能只靠 Flutter 实现
+
+因为 Android 桌面小组件不是你的 App 页面的一部分。
+
+它依赖的是 Android 的：
+
+- `AppWidgetProvider`
+- `RemoteViews`
+- `BroadcastReceiver`
+- `AppWidgetManager`
+- `AndroidManifest.xml`
+- widget 的 XML 元数据
+
+而桌面小组件的展示位置在：
+
+- 手机桌面 Launcher
+
+也就是说：
+
+- 小组件最终是显示在 Launcher 进程里
+- 不是显示在 Flutter 的 `SurfaceView` / `TextureView` 里
+- Flutter Widget 树根本不会直接跑在桌面 Host 上
+
+所以这类能力必须补 Android 原生文件。
+
+### 3. 工程上通常要加哪些原生内容
+
+至少包括：
+
+- `AppWidgetProvider` 类
+- 一个或多个 widget XML 布局文件
+- widget provider info XML
+- `AndroidManifest.xml` 中的 receiver 声明
+- 根据业务需要增加 `WorkManager` / `Service`
+- Flutter 和原生之间的数据同步桥
+
+### 4. 一个典型实现流程
+
+#### 第一步：Flutter 侧把业务数据写给原生
+
+Flutter 通常负责：
+
+- 请求接口
+- 算出需要展示的数据
+- 调原生更新小组件
+
+```dart
+import 'package:flutter/services.dart';
+
+class AndroidHomeWidgetBridge {
+  static const MethodChannel _channel =
+      MethodChannel('android_home_widget');
+
+  static Future<void> update({
+    required int pendingCount,
+    required String summary,
+  }) async {
+    await _channel.invokeMethod('updateWidget', {
+      'pendingCount': pendingCount,
+      'summary': summary,
+    });
+  }
+}
+```
+
+#### 第二步：Android 原生实现 MethodChannel
+
+```kotlin
+class MainActivity : FlutterActivity() {
+    private val channelName = "android_home_widget"
+
+    override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
+        super.configureFlutterEngine(flutterEngine)
+
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, channelName)
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "updateWidget" -> {
+                        val pendingCount = call.argument<Int>("pendingCount") ?: 0
+                        val summary = call.argument<String>("summary") ?: ""
+                        WidgetStore.save(this, pendingCount, summary)
+                        OrderWidgetProvider.refreshAll(this)
+                        result.success(null)
+                    }
+                    else -> result.notImplemented()
+                }
+            }
+    }
+}
+```
+
+这里通常会把 Flutter 传来的数据先落到：
+
+- `SharedPreferences`
+- `Room`
+- `DataStore`
+
+因为小组件更新时，未必能直接访问 Flutter 运行时。
+
+#### 第三步：编写 AppWidgetProvider
+
+```kotlin
+class OrderWidgetProvider : AppWidgetProvider() {
+    override fun onUpdate(
+        context: Context,
+        appWidgetManager: AppWidgetManager,
+        appWidgetIds: IntArray
+    ) {
+        appWidgetIds.forEach { appWidgetId ->
+            val data = WidgetStore.read(context)
+            val views = RemoteViews(context.packageName, R.layout.order_widget).apply {
+                setTextViewText(R.id.pendingCountText, data.pendingCount.toString())
+                setTextViewText(R.id.summaryText, data.summary)
+            }
+            appWidgetManager.updateAppWidget(appWidgetId, views)
+        }
+    }
+
+    companion object {
+        fun refreshAll(context: Context) {
+            val manager = AppWidgetManager.getInstance(context)
+            val component = ComponentName(context, OrderWidgetProvider::class.java)
+            val ids = manager.getAppWidgetIds(component)
+            val intent = Intent(context, OrderWidgetProvider::class.java).apply {
+                action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
+                putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
+            }
+            context.sendBroadcast(intent)
+        }
+    }
+}
+```
+
+#### 第四步：定义原生 XML 布局
+
+```xml
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="12dp">
+
+    <TextView
+        android:id="@+id/pendingCountText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="24sp" />
+
+    <TextView
+        android:id="@+id/summaryText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+</LinearLayout>
+```
+
+#### 第五步：在 Manifest 注册
+
+```xml
+<receiver
+    android:name=".widget.OrderWidgetProvider"
+    android:exported="false">
+    <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+    </intent-filter>
+
+    <meta-data
+        android:name="android.appwidget.provider"
+        android:resource="@xml/order_widget_info" />
+</receiver>
+```
+
+### 5. 底层运行原理是什么
+
+Android 桌面小组件的关键点在于：
+
+`它不是 Flutter 把一棵 Widget 树画到桌面上，而是你的 App 提供一个可被系统远程渲染的 RemoteViews 描述。`
+
+运行链路大致是：
+
+```text
+用户把小组件拖到桌面
+-> Launcher 向系统申请绑定该 widget provider
+-> 系统在合适时机回调你的 AppWidgetProvider
+-> 你的 App 进程构造 RemoteViews
+-> AppWidgetManager 把 RemoteViews 发送给 Launcher
+-> Launcher 进程按照 RemoteViews 规则渲染出桌面小组件
+```
+
+关键理解点：
+
+- 显示小组件的是 Launcher
+- 不是 Flutter 引擎
+- 不是 Dart isolate
+- 不是你 App 正常页面里的 Widget 树
+
+这也是为什么桌面小组件一般要用：
+
+- 原生 XML 布局
+- `RemoteViews`
+- 原生 receiver / manager 体系
+
+而不是直接写 Flutter `Container`、`Column`、`Text`。
+
+### 6. 为什么数据通常要先落原生存储
+
+因为桌面小组件更新时经常出现这些情况：
+
+- App 没启动
+- Flutter Engine 没初始化
+- 用户只是回到桌面
+- 系统因为定时刷新或广播拉起你的 provider
+
+这时如果小组件展示依赖 Dart 内存态，就会失效。
+
+所以真实项目里通常会把数据同步到原生侧持久化层，再由小组件自己读取。
+
+### 7. 如果还要定时刷新，会怎么做
+
+常见做法：
+
+- `WorkManager` 定时拉接口
+- `BroadcastReceiver` 响应系统事件
+- 用户打开 App 后再次同步最新数据
+
+也就是说，完整架构通常是：
+
+```text
+Flutter 负责主业务和主动同步
+Android 原生 widget 负责桌面展示
+WorkManager / Receiver 负责后台刷新入口
+SharedPreferences / DataStore 负责共享数据
+```
+
+这就是 Android 桌面小组件为什么是“必须原生承接”的另一个典型例子。
+
+---
+
+## 八、从底层原理上，为什么有些能力 Flutter 天生不能纯 Dart 完成
+
+根本原因不是 Flutter “不够强”，而是操作系统本身就是这样设计的。
+
+### 1. 很多系统能力要求固定入口类
+
+比如：
+
+- iOS 要你提供 `AppDelegate`、Extension、Intent 配置
+- Android 要你提供 `Activity`、`Service`、`BroadcastReceiver`、`ContentProvider`
+
+这些入口是系统按平台规范查找和拉起的，不是 Flutter 自己决定的。
+
+### 2. 很多系统 UI 不在 Flutter 画布里
+
+比如：
+
+- 锁屏卡片
+- Dynamic Island
+- 桌面小组件
+- 系统通知
+- 原生分享面板
+- 原生输入法扩展
+
+这些 UI 的宿主不是 Flutter 页面，所以 Dart Widget 树天然无法直接接管。
+
+### 3. 很多能力要求平台工程声明
+
+比如：
+
+- 后台模式
+- 推送能力
+- 蓝牙权限
+- Health 数据权限
+- URL Scheme
+- App Group
+- Associated Domains
+
+这些都属于平台工程配置，不可能只靠 Flutter `lib/` 目录解决。
+
+### 4. 某些性能和硬件能力只能走平台 API
+
+比如：
+
+- 摄像头底层管线
+- 蓝牙协议栈
+- 音频会话
+- 系统电话能力
+- NFC
+- 桌面宿主互操作
+
+这些都必须最终落到平台 SDK。
+
+---
+
+## 九、工程实践中应该怎么判断“先找插件”还是“直接写原生”
+
+建议按下面顺序判断：
+
+### 第一步：先确认是否已有成熟插件
+
+重点看：
+
+- 是否持续维护
+- 是否覆盖你要的能力
+- 是否支持当前 Flutter / iOS / Android 版本
+- 是否处理好了权限和生命周期
+
+### 第二步：看它是不是系统级组件 / 系统级入口
+
+如果需求属于下面这些，基本要提前做好原生方案预期：
+
+- Extension
+- Widget
+- Service
+- Receiver
+- 深后台能力
+- 新版系统 API
+
+### 第三步：看第三方 SDK 官方是否只支持原生接入
+
+如果官方文档只给：
+
+- Swift / Objective-C
+- Kotlin / Java
+
+那最稳的做法通常就是自己封装 Flutter plugin 或平台桥。
+
+### 第四步：评估协同边界怎么划
+
+一个好的边界通常是：
+
+- Flutter 负责业务状态和页面
+- 原生只负责平台差异能力
+- 通信参数保持稳定、扁平、可序列化
+
+不要把太多业务判断塞进原生层，否则后续维护会很痛苦。
+
+---
+
+## 十、最后用一句话把这件事讲透
+
+Flutter 工程和 iOS / Android 原生工程的关系，不是“谁替代谁”，而是：
+
+`Flutter 负责跨平台业务表达，原生工程负责接住平台能力与系统入口；当需求进入系统级能力、原生 SDK、扩展组件、后台入口、桌面/锁屏宿主这类边界时，就必须由 Swift / Kotlin 等原生代码承接。`
+
+如果你把这个边界真正理解透了，后面再看：
+
+- 为什么有些功能插件能做
+- 为什么有些功能必须补原生
+- 为什么很多 Flutter 项目最终都要维护一部分 iOS / Android 原生代码
+
+这些问题就都会顺了。
 
 
 

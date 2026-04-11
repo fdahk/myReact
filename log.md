@@ -1,3 +1,27 @@
+## 2026-04-09
+
+- **docs/面试/其他.md**、**docs/面试/字节剪映二面.md**：按“提高信息密度”的要求继续清理文档结构，批量删除反复出现的 `**参考回答：**` 等低信息量结构标记，压缩由此产生的多余空行，让文档更接近“题目 + 直接可背答案”的高密度复习稿形式。
+
+- **docs/面试/其他.md**：根据本轮提供的多张面试题截图，新建“其他公司面试题整理”文档，按 `字节豆包`、`生活服务`、`美团`、`小米`、`PDD`、`海康`、`百度 App`、`腾讯微信小程序团队`、`Dy 直播` 等公司/方向对可明确识别题目做结构化归类，并统一补充参考回答，覆盖 `keep-alive`、`fetch`、`polling`、`Promise.all`、浏览器渲染、缓存、`HTTP/2/3`、`webpack loader`、`JWT`、`Web Worker`、`Tailwind CSS`、`eventBus`、`Promise queue`、埋点、NAT、树转列表、最长回文子串等高频题。
+
+- **docs/面试/字节剪映二面.md**：对文档后半段新增的零散补充题进行第一次系统整理，在不删除原始记录的前提下插入 **「八、补充题整理版」**，把 `token` 被窃取、`IntersectionObserver` 无限滚动与虚拟列表、`HTTP/2`、`Koa/Express`、`this`、闭包、发布订阅、`WebSocket`、`JWT`、`vue-router`、`nextTick`、`CommonJS/ESM`、`pnpm`、`rebase`、跨域、`display:none` 与 `visibility:hidden`、手写 `once/compose/merge/throttle`、代码输出题与算法题等内容补成去重后的参考答案，同时保留原始补充笔记供后续继续扩展。
+
+- **docs/面试/字节剪映二面.md**：按一面同样的深挖标准继续补强二面文档中原本略偏概念化的部分，重点新增 `Memory` 的具体存储/检索/治理方案、`RAG` 召回优化每一步的真实落地方式、评测集构建与离线/线上指标区分、为何选择标题做向量化的更底层解释，以及 `LoRA/QLoRA` 的工程定位与评估口径，整体把二面回答进一步提升到“能讲方案、能讲实现、能讲权衡”的层次。
+
+- **docs/面试/剪映一面.md**：继续把 `RAG` 与布隆过滤器相关内容从“概念说明”补到“实现机制”层面，新增自然语言 query 如何通过规则、`NER`、意图识别拆成结构化过滤条件、`rerank model` 作为精排模型的输入输出与为何不能直接全库精排，以及 `Bloom Filter` 中“某一位为 `0` 则一定不存在、全为 `1` 只能说明可能存在”的具体哈希位判断过程和假阳性成因。
+
+- **docs/面试/剪映一面.md**：在 `RAG` 向量检索部分继续补充 `embedding model` 的准确定位，明确它不是“专门把文本转成 token 的模型”，而是把 token 序列编码成语义向量的模型；同时补充 `tokenizer`、`embedding model`、`LLM` 三者在输入处理、语义表示、生成任务上的职责差异，并澄清“长文本进入模型前通常都要先切 token，但并不是所有业务处理文本链路都必须经过 embedding model”。 
+
+- **docs/面试/剪映一面.md**：继续补强超卖章节中“悲观锁”部分，新增对数据库锁本质、`select ... for update` 为什么能锁住行、这是否属于数据库原生事务/锁机制、为什么它能避免多个事务基于同一份旧库存并发扣减等底层解释，把“会背名词”进一步提升到“能说明数据库并发控制原理”。
+
+- **docs/面试/剪映一面.md**：继续按逐点追问方式深挖补强一面文档中原本偏概念化的答案，系统补充 `MCP` 与 `Tool Calling` 的准确关系、`Memory` 的具体存储/管理/检索方案、`revalidate` / `CDN` / 接口缓存的分层机制、`TLS 1.2/1.3` 握手与 HTTPS 防中间人攻击的底层流程、超卖方案的实现与原子性原理、向量检索/条件过滤/`rerank` 的具体实现链路、位图与布隆过滤器的优化原理、参数化查询为何能防 `SQL` 注入、浏览器强缓存/协商缓存的自动运行机制、正则中的贪心/惰性/分组/捕获/前瞻、`queueMicrotask` 与 `MutationObserver`、`React 17/18/19` 的具体差异与使用价值、Agent 计划结构化校验实现，以及 `SSR` / `SSG` 的底层运行时差异，整体把答案从“能背概念”提升到“能经得住技术追问”。
+
+- **docs/面试/剪映一面.md**、**docs/面试/字节剪映二面.md**：继续按字节前端面试深挖风格补充第二轮高压追问，新增多 Agent 是否真优于单 Agent、完成率如何定义与测量、主 Agent 拆错如何兜底、`Memory` 误召回和过时经验如何治理、为何先做架构优化而非直接微调、`RAG` 中 `topK` 与 `rerank` 的取舍、只给一周应优先做哪些优化，以及 `Scheduler` 手写题在失败场景下如何避免卡死等高频追问与高分回答，进一步强化“真实性、指标意识、架构取舍、工程兜底”这几个字节常问点。
+
+- **docs/面试/剪映一面.md**、**docs/面试/字节剪映二面.md**：将原本只有题目清单的两份字节剪映前端面试文档系统补全为可直接口述的参考答案，围绕 `AI Agent` 项目、多 Agent 架构、`MCP` 与 `Tool Calling`、`Memory` 复用、`Next.js` 电商、`SSR/CSR/SSG`、`HTTPS/TLS`、超卖、`RAG` 导购、召回优化、微调认知、`AI Native` 前端岗位理解等高频面试点补充成“问题 -> 思路 -> 方案 -> 结果”的表达模板，并在二面文档中补充可直接手写的并发限制 `Scheduler` 实现，方便按题逐项复习和临场回答。
+
+- **docs/flutter.md**：新增 **「Flutter 工程如何和 iOS / Android 原生代码协同」** 专题，系统补充 `Flutter Engine`、原生宿主、`Platform Channel`、`PlatformView`、`FFI` 等协同机制，详细说明什么场景下可以只用插件、什么场景下必须补 `Swift` / `Kotlin` 等原生文件，并分别用 iOS `Live Activities / Dynamic Island` 与 Android 桌面 `App Widget` 两个真实业务需求串讲从 Flutter 发起、原生承接、系统托管展示到底层运行过程的完整链路。
+
 ## 2026-03-30
 
 - **docs/前端面试/灰度发布与回滚.md**：继续在选型分析章节中新增“为什么 `Flutter` 和 `Web` 的发版机制差异，会直接影响工具选择”，系统补充 Web 发版快 / 回滚快 / 试错成本低为何会放大实验平台价值，移动端提审慢 / 用户更新慢 / 多版本长期共存 / 止血难为何会让灰度发布与远程开关优先级更高，并进一步澄清“`Flutter` 不是一般不做 `AB` 测试，而是更常见顺序是先把灰度和开关做稳，再把实验做深”的工程原因。
@@ -116,3 +140,11 @@
 - **docs/前端面试/小米二面.md**：扩写“大模型对话中的 token 技术”部分，补充 tokenizer、上下文拼装、位置编码、KV Cache、RAG 检索链路、embedding/chunk/rerank、tool use 协作闭环、流式 chunk 传输、采样策略及一次真实对话请求的完整 token 视角链路。
 - **docs/前端面试/小米二面.md**：继续补全大模型对话部分的术语解释与英文全称，新增对 `tokenizer`、`BPE`、`SentencePiece`、`RAG`、`embedding`、`chunk`、`rerank`、`schema`、`orchestrator`、`KV Cache`、`logits`、`nucleus sampling`、`top-k`、`frequency penalty`、`presence penalty` 等名词的就地说明。
 - **docs/前端面试/小米二面.md**：继续补齐大模型对话部分剩余缺失术语，新增对 `few-shot`、条件分布、`query`/query 改写、混合检索、结构化输出、副作用、幻觉等概念的就地解释，增强非 AI 背景读者的可读性。
+
+## 2026-04-11
+
+- **docs/面试/其他.md**：按“把回复写到对应问题处”的要求，开始将原本只有题目的零散面试清单改写为可直接口述的问答稿；本轮已系统补充文档开头几组高频题，覆盖 `qiankun` / 微前端实现方案、沙箱与样式隔离、`Web Worker`、请求池与 `Promise.allSettled`、`HTTP/1.1` / `HTTP/2` / `HTTP/3` / `HTTPS`、`Astro` 岛屿架构、React Hooks / `useEffect` / Fiber、`Taro` 与 `React Native`、`Pick` / 发布订阅 / 数组扁平化、React `keep-alive`、`fetch`、`XSS` / `CSRF`、对象 `diff`、`polling`、线程与进程、垃圾回收、`webpack` 工程化、`monorepo`、`Koa`、数组转树、Vue3 `Composition API` 与响应式、事件循环、`Promise.all`、最大子数组和与工程协同等内容，并把回答整理成更适合背诵和临场展开的结构化表达。
+
+- **docs/面试/其他.md**：继续将文档后半段剩余的裸题统一补全为“题目 + 参考回答”形式，按业务场景、Vue/React、浏览器与网络、Next.js、SSE / WebSocket、AI 工程、并发控制、事件委托、像素与布局、`Tailwind CSS`、`XHR`、`JWT`、懒加载、受控/非受控组件、`VDOM` / `Svelte`、性能分析、装饰器、`NAT`、跨域、存储、设计模式、`IntersectionObserver`、`Koa/Express`、`TS` 类型题、节流/防抖、`git rebase`、安全攻击面、`vue-router`、模块系统、缓存、`Cookie`、`Map/WeakMap/Set`、跨标签页通信、构建配置、测试、`SVG/Canvas/WebGL`、光照与渲染管线等主题进行系统归类补答，并清理到文档末尾不再残留“只有问题没有答案”的原始问句。
+
+- **docs/面试/其他.md**：根据本轮逐点追问，对前面回答质量不足的部分继续做第二轮深挖补强，重点新增 `Shadow DOM` 的作用域模型、`Web Worker` 的创建与消息通信、`HTTP/2` 二进制分帧 / 多路复用 / `HPACK` / 流控、`HTTP/3` 中 `0-RTT` / `1-RTT` 与 TCP 级队头阻塞、`ALPN` 协商、`SYN` / `ACK` / `SYN_RCVD` 全称与握手状态机、`IndexedDB`、`CustomEvent` / `BroadcastChannel` / `storage` 事件、`Astro` 的准确定位、React Native `Bridge` / `JSI` 全链路、`Pick` / `infer` / 条件类型分发、条件树渲染代码详细注释、`XSS` / `CSP` 的原理、`webpack` 模块图与 loader / plugin 实现、`RSC` / `SSR` / hydration / 路由缓存、Next 异步组件与首页性能优化、事件委托相关 API、React `SyntheticEvent` 事件托管原理，以及 `NAT` 全流程等内容；同时把文档 `2034-2696` 区间整体改写为更重原理、机制和术语解释的高质量版本。
