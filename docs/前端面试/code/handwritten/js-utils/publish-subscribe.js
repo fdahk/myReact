@@ -1,11 +1,12 @@
 /*
  * 实现目标：
  * - 实现一个最小版发布订阅中心，让不同模块通过事件名进行解耦通信。
- * - 用来展示事件总线的核心结构：事件表、订阅、发布、取消订阅。
+ * - 覆盖 `on`、`once`、`emit`、`off` 四个高频能力。
  *
  * 核心思路：
  * - 使用 `Map` 存储事件名到监听函数集合的映射。
  * - `subscribe` 负责注册监听器，并返回一个可直接调用的取消订阅函数。
+ * - `once` 本质是再包一层函数，执行一次后自动移除。
  * - `publish` 遍历当前事件对应的监听器集合，把载荷逐个分发出去。
  *
  * 复杂度 / 运行特征：
@@ -15,7 +16,8 @@
  * 易错点：
  * - 若允许重复订阅，同一个监听器可能被调用多次；这里用 `Set` 天然避免重复。
  * - 取消订阅后若集合为空，及时删除事件键能减少无效占用。
- * - 真实生产场景常还会补一次性订阅、异常隔离和异步调度等能力。
+ * - `once` 包装函数和原始函数不是同一个引用，移除时要注意保存包装器。
+ * - 真实生产场景常还会补异常隔离和异步调度等能力。
  *
  * 适用场景 / 面试表达点：
  * - 适合讲模块解耦、事件驱动模型、发布订阅与观察者模式的差异。
@@ -33,6 +35,15 @@ class PubSub {
     listeners.add(listener);
     this.events.set(eventName, listeners);
     return () => this.unsubscribe(eventName, listener);
+  }
+
+  once(eventName, listener) {
+    const wrapper = (payload) => {
+      this.unsubscribe(eventName, wrapper);
+      listener(payload);
+    };
+
+    return this.subscribe(eventName, wrapper);
   }
 
   unsubscribe(eventName, listener) {
@@ -60,3 +71,6 @@ const pubsub = new PubSub();
 const off = pubsub.subscribe('message', (payload) => console.log(payload));
 pubsub.publish('message', { text: 'hello' });
 off();
+pubsub.once('init', (payload) => console.log('once:', payload));
+pubsub.publish('init', 1);
+pubsub.publish('init', 2);

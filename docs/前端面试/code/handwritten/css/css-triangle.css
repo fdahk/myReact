@@ -1,0 +1,79 @@
+/*
+实现目标：
+- 汇总 CSS 三角形的常见实现方式，包括 `border`、`clip-path`、旋转方块裁切、伪元素箭头等。
+
+核心思路：
+- `border` 法：利用 `0 x 0` 盒子只剩边框，边框区域在视觉上形成四个三角块。
+- `clip-path` 法：先画矩形，再裁剪出三角形区域。
+- 旋转方块法：先画正方形，旋转后再通过裁切只露出一个角。
+
+适用场景：
+- tooltip 箭头
+- 气泡弹层指示箭头
+- 下拉箭头
+- 角标装饰
+*/
+
+/* 1. border 法：朝上三角形 */
+.triangle-border-up {
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-bottom: 20px solid red;
+}
+
+/* 2. border 法：朝下三角形 */
+.triangle-border-down {
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 20px solid red;
+}
+
+/* 3. clip-path 法：先画矩形，再裁剪成三角形 */
+.triangle-clip-path {
+  width: 40px;
+  height: 40px;
+  background: red;
+  clip-path: polygon(50% 0, 0 100%, 100% 100%);
+}
+
+/* 4. 旋转方块法：配合父容器裁切 */
+.triangle-rotate-wrapper {
+  width: 20px;
+  height: 10px;
+  overflow: hidden;
+}
+
+.triangle-rotate {
+  width: 14px;
+  height: 14px;
+  background: red;
+  transform: rotate(45deg);
+  transform-origin: center;
+}
+
+/* 5. 伪元素 + border 法：实际业务里很常见 */
+.tooltip {
+  position: relative;
+  width: max-content;
+  padding: 8px 12px;
+  color: #fff;
+  background: #333;
+  border-radius: 6px;
+}
+
+.tooltip::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 8px solid #333;
+}

@@ -1,3 +1,37 @@
+## 2026-04-12
+
+- **docs/移动端面试/code/handwritten/flutter/riverpod-minimal.dart**：继续增强 `Provider<T>` 这一段的教学注释，专门补充“为什么当前示例虽然主要实例化的是 `StateProvider<int>`，但 `Provider<T>` 仍然不是无意义代码”的解释，明确它承担的是普通 provider 形态、抽象层次基准和继承关系示范的角色，并补充与 `StateProvider<T>` 的直接对照，以及一个产出普通 `String` 依赖的最小使用例子，帮助把“普通 provider”和“状态型 provider”真正区分开。
+
+- **docs/移动端面试/code/handwritten/flutter/riverpod-minimal.dart**：继续把 Riverpod 最小实现补成“可顺着学懂”的版本，新增对 `ProviderBase<T>`、`Provider<T>`、`StateController<T>`、`StateProvider<T>`、`ProviderContainer` 这 5 个核心角色的职责说明，以及第一次 `read()` 到实例创建、包装、缓存、后续复用的完整调用链路解释，把原本分散的概念串成一条连贯的运行时关系线，方便从“知道每个类是什么”升级到“知道它们怎么一起工作”。
+
+- **docs/移动端面试/code/handwritten/flutter/riverpod-minimal.dart**：继续在文档末尾补充“概念辨析”，专门解释 Flutter 原生依赖传播机制、第三方 `provider` 状态管理工具、以及 Riverpod 体系里的 `provider` 定义对象这三者为什么不是同一个概念，并用“原生积木 / 基于积木搭好的工具 / 另一套工具体系里的核心抽象”这种方式做区分，避免后续复习时把这几个同名词汇混成一个东西。
+
+- **docs/移动端面试/code/handwritten/flutter/riverpod-minimal.dart**：继续增强 Riverpod 最小实现的语法解释，新增对 `_create` 字段声明与 `read<T>(...)` 方法声明差异的对照说明，重点拆清“字段里保存函数时必须写函数类型 `T Function(...)`”与“类成员方法本身走的是方法声明语法，所以不会再写一层 `Function` 类型”这两个 Dart 语言层面的不同语法角色，方便把这份文件直接当作 Dart 函数类型与方法声明的学习材料来读。
+
+- **docs/移动端面试/code/handwritten/flutter/riverpod-minimal.dart**：针对 `this._create` 和 `@override` 这两个具体追问，继续把 `Provider<T>` 这一段补成更适合学习的“语法解释版”，新增对 Dart 构造函数参数直接赋值字段写法、函数类型字段、父类抽象方法实现、`@override` 语义以及箭头函数简写的逐点说明，让这份 Riverpod 最小实现不仅能看思路，也能直接看懂每一行语法为什么这样写。
+
+- **docs/移动端面试/code/handwritten/flutter/**：继续补 Flutter 状态管理相关手写题，新增 **`provider-minimal.dart`**、**`riverpod-minimal.dart`**、**`cubit-minimal.dart`**、**`bloc-minimal.dart`** 4 个最小实现，用来覆盖面试里常被放在一起对比的四类状态管理方案。其中 `provider-minimal.dart` 用 `InheritedNotifier + watch/read` 抽象最小 Provider 思路，`riverpod-minimal.dart` 用 `ProviderBase + ProviderContainer + StateProvider` 抽象出“状态不直接挂在 BuildContext 上，而由独立容器持有”的 Riverpod 核心思路，`cubit-minimal.dart` 用 `state + stream + emit` 体现最小 Cubit 链路，`bloc-minimal.dart` 用 `add(event) -> mapEventToState -> stream` 体现最小 Bloc 链路，并统一补上“这题本质是什么、和相邻方案的核心差异是什么、真项目里还会继续补哪些能力”的讲题说明，方便直接拿来面试口述。
+
+- **docs/移动端面试/**、**docs/移动端面试/code/**、**docs/移动端面试/flutter专题/**：根据“只要题目，不要索引和纯结构文件”的要求，删除一批不再提供直接复习价值的结构性文件与过渡性总览文件，包括 **`docs/移动端面试/index.md`**、**`docs/移动端面试/Flutter专题.md`**、**`docs/移动端面试/code/README.md`**、**`docs/移动端面试/code/output/README.md`**、**`docs/移动端面试/code/handwritten/README.md`**、**`docs/移动端面试/flutter专题/index.md`**、**`docs/移动端面试/flutter专题/代码输出题专题.md`**、**`docs/移动端面试/flutter专题/手写题专题.md`**，把目录从“索引 + 入口 + 总览”收缩成“尽量只保留可以直接阅读的题目 / 专题内容”。
+
+- **docs/移动端面试/flutter专题/**、**docs/移动端面试/index.md**、**docs/移动端面试/Flutter专题.md**：针对“题目太少、分析太浅、需要按专题拆开”的反馈，继续把 Flutter 区从单篇总览和零散训练文件升级成一套专题化结构，新增 **`flutter专题/index.md`**、**`渲染机制与核心树.md`**、**`状态管理与生命周期.md`**、**`异步调度与并发.md`**、**`性能优化与渲染性能.md`**、**`平台通道与原生协同.md`**、**`代码输出题专题.md`**、**`手写题专题.md`** 8 篇专题文档，把 Flutter 的八股文、代码输出题、手写题分别按“渲染 / 状态 / 异步 / 性能 / 原生协同 / 训练专题”重组，同时在总索引和 `Flutter专题.md` 中补充新入口，保证后续可以按专题成体系复习，而不是继续把高频点堆在同一篇文档里。
+
+- **docs/移动端面试/Flutter高频面经题库.md**、**docs/移动端面试/code/output/flutter/**、**docs/移动端面试/code/handwritten/flutter/**：继续沿 Flutter 主线补第二批高价值内容，新增 **`Flutter高频面经题库.md`**，把 `Widget / Element / RenderObject`、`setState`、`ChangeNotifier` / `ValueNotifier`、`FutureBuilder` / `StreamBuilder`、Dart 事件循环、`addPostFrameCallback`、isolate、Flutter 性能、包体、`Platform Channel` 等高频一二面追问整理成可直接口述的题库；同时继续补充第二批 Flutter 训练文件，新增 **`value-listenable-builder.md`**、**`stream-broadcast.md`** 两个代码输出题，以及 **`value-listenable-page.dart`**、**`compute-wrapper.dart`**、**`broadcast-event-bus.dart`** 三个更贴近真实项目的最小实现，把训练区继续从“只覆盖基础异步和状态”推进到“覆盖 Flutter 轻量状态管理、compute 背景计算、broadcast stream 事件流”这几个面试中常被追问的方向。
+
+- **docs/移动端面试/index.md**、**docs/移动端面试/code/output/README.md**、**docs/移动端面试/code/handwritten/README.md**：同步更新知识库导航和训练入口，把新增的 `Flutter高频面经题库`、`ValueListenableBuilder`、`StreamController.broadcast`、`compute()`、broadcast 事件总线等内容挂到索引里，确保知识库已经不是“文件落在目录里但入口看不到”，而是可以沿 `index -> Flutter专题 / Flutter高频面经题库 -> code/output / code/handwritten` 这条路径直接开始复习和训练。
+
+- **docs/移动端面试/code/**、**docs/移动端面试/Flutter专题.md**、**docs/移动端面试/index.md**：根据“代码题、手写题、代码输出题主要以 Flutter 为主”的新要求，先对 Flutter 高频面试点做了一轮资料审查与网络检索，重点参考了 Flutter 官方关于 `SchedulerBinding.addPostFrameCallback`、`ChangeNotifier` 的文档说明，以及 Dart 关于 event loop、microtask、Future、isolate 的官方资料；在此基础上把训练区重心从“泛移动端混合题”调整为“Flutter / Dart 为主、其他方向补充”，并在 `Flutter专题.md` 中继续补强 `ChangeNotifier` / `ValueNotifier`、`StreamBuilder`、事件循环、`addPostFrameCallback`、isolate、Flutter 代码题重点等更贴近真实面试追问的内容。
+
+- **docs/移动端面试/code/output/**：继续补充一批 Flutter 代码输出题，新增 **`post-frame-callback.md`**、**`change-notifier-order.md`**、**`stream-listen-order.md`**、**`isolate-ui-block.md`**，连同已有 **`future-microtask.md`** 一起把 Dart 异步调度、帧尾回调、状态通知、流事件和 isolate 相关题型串成一条完整训练线；同时同步改写 `code/output/README.md`，把“为什么这些题值得练、首批应该从哪几题开始练”都切换成 Flutter 视角，减少原先偏 Web / 多端平均分布的问题。
+
+- **docs/移动端面试/code/handwritten/**：新增 **`flutter/simple-change-notifier.dart`**、**`flutter/value-notifier-model.dart`**、**`flutter/retry-with-backoff.dart`**、**`flutter/cancelable-search-controller.dart`**、**`flutter/platform-channel-service.dart`**、**`flutter/file-upload-queue.dart`** 6 个更贴近 Flutter 面试和真实业务的最小实现，分别覆盖状态管理、单值状态、弱网重试、旧请求失效控制、`Platform Channel` 封装和上传并发调度；同时重写 `code/README.md` 与 `code/handwritten/README.md` 的训练优先级和题目清单，使其默认先练 Flutter / Dart 相关题，再把请求竞态、Bridge 回调等其它移动端通用题作为补充。
+
+- **docs/移动端面试/**：继续把原本只有首轮骨架的移动端面试知识库补全成更完整的复习体系，在已有 `index.md`、性能、网络、`React Native`、`Flutter`、小程序、`Hybrid`、原生协同、场景题、项目表达等基础上，新增 **`移动端架构设计.md`**、**`包体优化与资源治理.md`**、**`监控埋点与异常治理.md`**、**`灰度发布与版本治理.md`**、**`移动端安全与登录认证.md`**、**`上架发布与审核专题.md`** 6 篇深挖专题，把知识库从“首轮目录骨架”扩展为覆盖架构、包体、监控、版本治理、安全、发布审核等关键面试维度的系统化移动端前端题库，并同步更新 `index.md` 的专题导航和分层复习路径。
+
+- **docs/移动端面试/场景题专题.md**、**docs/移动端面试/项目表达与自我介绍.md**：继续补强移动端输出训练部分，在场景题里新增包体突增、灰度长尾机型异常、监控指标与用户投诉错位、无法快速发版时的止血、版本信息和监控绑定等更贴近真实移动端项目的问题；在项目表达里新增按 `React Native` / `Flutter` / 小程序 / `Hybrid` 划分的表达重心、灰度和版本治理表达模板、监控异常治理表达模板、移动端高频追问题库等内容，把“会看文档”继续升级到“能按移动端语境直接口述和应对追问”。
+
+- **docs/移动端面试/code/**：把代码训练区从 README 级别的占位说明补成“有实体题可练”的状态，新增 **6 个代码输出题** 与 **6 个手写题实现**，分别覆盖事件循环、请求竞态、`React Native` 闭包旧值、小程序 `setData` 理解、`Hybrid` Bridge 回调、`Flutter Future/microtask` 顺序，以及请求取消、token 刷新单飞、指数退避重试、文件切片上传调度、流式状态机、统一桥接调用封装等移动端高频训练方向，并同步更新 `code/README.md`、`code/handwritten/README.md`、`code/output/README.md` 使其可以直接作为训练入口使用。
+
 ## 2026-04-09
 
 - **docs/面试/其他.md**、**docs/面试/字节剪映二面.md**：按“提高信息密度”的要求继续清理文档结构，批量删除反复出现的 `**参考回答：**` 等低信息量结构标记，压缩由此产生的多余空行，让文档更接近“题目 + 直接可背答案”的高密度复习稿形式。
@@ -148,3 +182,9 @@
 - **docs/面试/其他.md**：继续将文档后半段剩余的裸题统一补全为“题目 + 参考回答”形式，按业务场景、Vue/React、浏览器与网络、Next.js、SSE / WebSocket、AI 工程、并发控制、事件委托、像素与布局、`Tailwind CSS`、`XHR`、`JWT`、懒加载、受控/非受控组件、`VDOM` / `Svelte`、性能分析、装饰器、`NAT`、跨域、存储、设计模式、`IntersectionObserver`、`Koa/Express`、`TS` 类型题、节流/防抖、`git rebase`、安全攻击面、`vue-router`、模块系统、缓存、`Cookie`、`Map/WeakMap/Set`、跨标签页通信、构建配置、测试、`SVG/Canvas/WebGL`、光照与渲染管线等主题进行系统归类补答，并清理到文档末尾不再残留“只有问题没有答案”的原始问句。
 
 - **docs/面试/其他.md**：根据本轮逐点追问，对前面回答质量不足的部分继续做第二轮深挖补强，重点新增 `Shadow DOM` 的作用域模型、`Web Worker` 的创建与消息通信、`HTTP/2` 二进制分帧 / 多路复用 / `HPACK` / 流控、`HTTP/3` 中 `0-RTT` / `1-RTT` 与 TCP 级队头阻塞、`ALPN` 协商、`SYN` / `ACK` / `SYN_RCVD` 全称与握手状态机、`IndexedDB`、`CustomEvent` / `BroadcastChannel` / `storage` 事件、`Astro` 的准确定位、React Native `Bridge` / `JSI` 全链路、`Pick` / `infer` / 条件类型分发、条件树渲染代码详细注释、`XSS` / `CSP` 的原理、`webpack` 模块图与 loader / plugin 实现、`RSC` / `SSR` / hydration / 路由缓存、Next 异步组件与首页性能优化、事件委托相关 API、React `SyntheticEvent` 事件托管原理，以及 `NAT` 全流程等内容；同时把文档 `2034-2696` 区间整体改写为更重原理、机制和术语解释的高质量版本。
+
+- **docs/面试/其他.md**：继续补强两处仍偏简略的基础题说明：将 `CSS` 三角形从“只给 `border` 方案”扩展为 `border`、`clip-path`、旋转方块裁切、伪元素挂三角、`SVG` 等多种实现方式，并分别补上绘制原理、适用场景和面试表达；同时将“软链接与硬链接区别”从一句话对比扩展为基于目录项、`inode`、路径引用、删除行为、跨文件系统能力、工程用途以及 `pnpm` 安装机制的完整解释，提升零基础可理解性。
+
+- **docs/面试/其他.md**：继续针对 `CSS` 三角形中“为什么三条边能形成三角形”与 `clip-path: polygon(...)` 参数不易理解的问题做第三轮补充，在 `border` 法下新增“宽高压到 0 后四条有厚度边框收缩到同一中心点，从而视觉上形成 4 个三角区域”的过程化解释，并用示意图帮助理解；同时把 `polygon(50% 0, 0 100%, 100% 100%)` 拆成逐点坐标说明，明确每个参数分别表示相对元素宽高的 `x/y` 位置及其对应顶点含义。
+
+- **docs/前端面试/code/handwritten/**、**docs/前端面试/code/README.md**、**docs/前端面试/code/handwritten/README.md**：按“把 `docs/面试/` 里的代码题整理到 `handwritten` 目录”这一要求，先梳理 `其他.md`、`字节剪映二面.md`、`剪映一面.md` 中明确属于手写题 / 代码题 / 算法题的条目，再和现有 `handwritten` 目录做映射去重；在复用已有 `array-flatten`、`Promise.all`、`array-to-tree`、`xhr-core`、`vue-router-core`、`vue-next-tick` 等文件的基础上，新增 `ts-pick.ts`、`ts-extendable.ts`、`basic-proxy.js`、`object-diff.js`、`fetch-request.ts`、`polling.js`、`promise-queue.js`、`concurrency-retry-limiter.js`、`promisify.js`、`condition-tree-render.tsx`、`select-controlled-uncontrolled.tsx`、`performance-metrics-reporter.js`、`max-subarray.js`、`merge-sorted-arrays.js`、`min-cost-tickets.js`、`common-elements-from-streams.js`、`scheduler-limit.js`、`red-packet.js` 等缺失实现，并把 `publish-subscribe.js` 补齐 `once` 能力；同时更新两个 README 的覆盖清单，方便从目录直接定位这些从面试文档抽出的代码题。

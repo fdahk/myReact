@@ -10,10 +10,6 @@ Flutter 的样式系统特点：
 
 # Flutter 工程如何和 iOS / Android 原生代码协同
 
-很多人会把 Flutter 理解成“跨平台后就不需要原生了”，这其实不准确。
-
-更准确的说法是：
-
 - `Flutter` 负责用 `Dart` 描述 UI、状态和业务逻辑。
 - `iOS` / `Android` 原生工程负责把 `Flutter Engine` 跑起来，并继续承担操作系统入口、生命周期、权限、系统能力接入、原生 SDK 接入等职责。
 - 所以一个 Flutter App 本质上不是“脱离原生独立存在”，而是“运行在原生宿主里的跨平台业务层”。
@@ -34,21 +30,47 @@ Flutter 的样式系统特点：
 - 这是 Flutter 的运行时引擎。
 - 负责启动 Dart isolate、管理消息循环、调度渲染、文本布局、图片解码、平台消息转发等。
 - 渲染层以前主要依赖 `Skia`，现在在很多场景下也会用 `Impeller`。
+- `Skia` 是一个跨平台 2D 图形渲染引擎，可以理解为 Flutter 早期/长期主要依赖的“画图内核”，负责把图层、文字、路径、图片真正绘制到屏幕上。
+- `Impeller` 是 Flutter 推出的新一代渲染引擎，目标是减少首帧卡顿、降低 shader 编译抖动、让渲染表现更稳定。你可以把它理解为 Flutter 在部分平台上逐步替代或补充 `Skia` 的现代渲染后端。
 
 ### 3. 原生宿主层（Host App）
 
 - `iOS` 侧是 `Runner.xcodeproj` / `Runner.xcworkspace`、`AppDelegate.swift`、`Info.plist`、各类 `entitlements`、原生 framework、Extension Target。
+- `Runner.xcodeproj`：iOS 原生工程文件，记录 target、build settings、签名配置、依赖关系等。
+- `Runner.xcworkspace`：Xcode 工作区，通常在用了 CocoaPods 之后以它为入口打开工程，因为它会把 `Pods` 工程和主工程组织到一起。
+- `AppDelegate.swift`：iOS 应用启动入口之一，用来接收应用生命周期事件，也常在这里做原生 SDK 初始化、注册渠道、推送、通知等。
+- `Info.plist`：iOS 应用配置清单，声明应用名、权限文案、URL Scheme、后台能力等静态配置。
+- `entitlements`：应用能力声明文件，用来告诉系统“这个 App 申请了哪些受控能力”，比如 Push、App Groups、Associated Domains、Sign in with Apple 等。
+- `原生 framework`：iOS 原生框架，可以是 Apple 官方框架，也可以是第三方二进制/源码框架，用来接入系统能力或第三方 SDK。
+- `Extension Target`：iOS 扩展目标，不是主 App 本体，而是挂在系统里的附属模块，例如 Widget、Share Extension、Notification Service Extension、Live Activity 相关扩展等。
+
 - `Android` 侧是 `android/app` 下的 `MainActivity.kt`、`AndroidManifest.xml`、`build.gradle`、`Application`、`Service`、`BroadcastReceiver`、`ContentProvider` 等。
+- `MainActivity.kt`：Android 页面入口 Activity，Flutter 页面通常就是挂载在这里启动的。
+- `AndroidManifest.xml`：Android 应用清单文件，声明组件、权限、进程、intent-filter、最低系统版本等基础信息。
+- `build.gradle`：Android 构建配置文件，用来管理插件、依赖、编译版本、签名、打包参数等。
+- `Application`：Android 应用级入口对象，进程启动时会先初始化它，常用于全局 SDK 初始化、全局状态准备。
+- `Service`：后台组件，没有独立 UI，适合执行持续任务，比如播放、同步、长连接、前台服务等。
+- `BroadcastReceiver`：广播接收器，用来接收系统或应用发出的广播事件，比如开机、网络变化、推送分发等。
+- `ContentProvider`：内容提供者，用统一的数据接口对外暴露应用数据，常用于跨应用/跨进程数据共享，也常被一些 SDK 用作自动初始化入口。
 - 这层负责接住操作系统提供的能力。
 
 ### 4. 操作系统层
 
 - 比如 `UIKit` / `ActivityKit` / `WidgetKit` / `CoreBluetooth` / `CallKit`。
+- `UIKit`：iOS 最核心的 UI 框架，负责页面、视图、手势、导航、窗口等传统界面能力。
+- `ActivityKit`：iOS 用来做 Live Activities 的框架，支持把实时状态展示到锁屏、Dynamic Island 等系统区域。
+- `WidgetKit`：iOS 小组件框架，用来开发桌面 Widget 和部分系统扩展展示内容。
+- `CoreBluetooth`：iOS 蓝牙框架，用来扫描、连接、读写 BLE 设备。
+- `CallKit`：iOS 通话能力框架，可以把 VoIP/音视频通话接入系统通话 UI 和来电体验。
 - 或者 `Android SDK` 里的 `AppWidgetProvider`、`Foreground Service`、`MediaSession`、`Bluetooth`、`Camera2`、`Health Connect`。
+- `AppWidgetProvider`：Android 桌面小组件入口类，本质上是处理 Widget 生命周期和更新事件的一种 `BroadcastReceiver`。
+- `Foreground Service`：前台服务，适合必须持续运行且需要明确通知用户的任务，比如导航、音乐播放、运动记录。
+- `MediaSession`：Android 媒体会话能力，用来接管系统媒体控制中心、锁屏控制、耳机按键等。
+- `Bluetooth`：Android 蓝牙相关 API 集合，用于经典蓝牙和 BLE 设备通信。
+- `Camera2`：Android 新一代相机 API，提供更底层、更可控的拍照和预览能力。
+- `Health Connect`：Android 健康数据平台，用统一接口管理步数、睡眠、心率等健康数据读写授权。
 
-一句话总结：
-
-`Flutter 不是绕开原生系统，而是通过原生宿主去使用系统能力。`
+总结：`Flutter 不是绕开原生系统，而是通过原生宿主去使用系统能力。`
 
 ---
 
@@ -71,8 +93,6 @@ Flutter 的样式系统特点：
 - `iOS` 原生实现
 - `Android` 原生实现
 - `Platform Channel` 通信桥
-
-也就是说：
 
 `你没写原生代码，不代表项目没有依赖原生代码；只是原生部分被插件作者提前封装好了。`
 
@@ -118,6 +138,29 @@ Flutter 的样式系统特点：
 ### 4. FFI
 
 如果你要接的是 `C` / `C++` 动态库，而不是 iOS / Android 的高级平台 API，可以走 `FFI`。
+
+- `FFI` 全称是 `Foreign Function Interface`，中文通常叫“外部函数接口”。
+- 它的作用是：让 `Dart` 代码可以直接调用另一个语言编译出来的本地函数，最常见就是 `C` / `C++` 动态库。
+- 你可以把它理解成一条“Dart 直接连到本地二进制库”的通道，而不是先走 `MethodChannel -> Swift/Kotlin -> 再调用库` 这条路。
+
+为什么这里经常是 `C` / `C++`：
+
+- 因为 `C` 的 ABI（应用二进制接口）最稳定、最通用，很多语言做底层互操作时都会优先兼容 `C` 接口。
+- 很多高性能基础库本来就是 `C` / `C++` 写的，比如音视频编解码、图像处理、加密、数据库内核、推理引擎。
+- 即使某个库内部是 `C++` 实现，也常常会额外暴露一层 `C` 风格接口，方便给 `Dart`、Python、Java、Rust 等别的语言调用。
+
+移动端和 `C` 语言的关系是什么：
+
+- 手机 App 虽然业务层常写 `Swift`、`Kotlin`、`Dart`、`JavaScript`，但底层并不只靠这些语言。
+- 操作系统本身、系统库、驱动、音视频库、图形库、加密库里，很多核心部分就是 `C` / `C++`。
+- 所以移动端开发里经常会出现“上层用 Flutter 写业务，下层复用已有 `C/C++` 库做重计算”的组合。
+- 比如你要在 Flutter 里接入一个已有的人脸识别库、音视频处理库、OCR 库、地图定位算法库，它很可能直接给你的就是 `.so` / `.a` / `.framework` 背后的 `C/C++` 能力。
+
+为什么需要 `FFI`：
+
+- 如果只是调用系统提供的页面、通知、蓝牙、相机、Widget 这类平台能力，`Platform Channel` 更自然，因为这些能力本来属于 iOS / Android 对象模型。
+- 但如果你要的是“一个已经编译好的本地算法/性能库”，再绕一层 `Swift/Kotlin` 只是中转，`FFI` 往往更直接，调用链更短，也更适合高频计算场景。
+- 换句话说，`FFI` 解决的是“跨语言调用本地库”的问题，不是“替代原生页面和系统组件”的问题。
 
 适用场景：
 
@@ -219,8 +262,6 @@ Engine 不会替你“实现蓝牙、推送、锁屏卡片、小组件”。
 
 ## 四、Flutter 侧工程通常如何和原生工程分工
 
-一个成熟项目里，比较常见的分工是：
-
 ### Flutter 负责
 
 - 跨平台 UI
@@ -263,42 +304,7 @@ android/
 
 这样做的核心目的，是把“跨平台业务逻辑”和“平台差异实现”拆开。
 
----
-
-## 五、什么时候必须写原生文件，不能只写 Dart
-
-这部分是重点。
-
-不是“只要和系统打交道就一定要自己写原生”，而是要分情况：
-
-### 情况 1：已经有成熟插件，而且能力完全够用
-
-这种情况通常不需要你自己写 Swift / Kotlin。
-
-比如：
-
-- 常规相机调用
-- 基础定位
-- 文件选择
-- 普通推送
-- WebView
-
-你仍然依赖原生实现，但原生代码已经在插件里。
-
-### 情况 2：没有可用插件，或者插件只覆盖了 60% 能力
-
-这时你通常必须补原生实现。
-
-典型情况：
-
-- 某个新系统 API 刚发布，插件还没跟上
-- 业务需要高级参数，但现有插件没暴露
-- 插件不维护了
-- 插件和你当前工程冲突
-
-### 情况 3：能力必须运行在 Flutter 引擎之外
-
-这类场景最典型，也最容易“必须写原生”。
+### 能力必须运行在 Flutter 引擎之外，这类场景最典型，也最容易“必须写原生”。
 
 因为这些能力根本不是在 Flutter 页面里运行的，而是在系统自己的组件或别的进程里运行：
 
@@ -350,12 +356,6 @@ android/
 - Notification / Associated Domains / App Groups
 
 这类需求严格来说不一定需要“大量原生业务代码”，但一定需要原生工程配合。
-
-### 一个实用判断标准
-
-可以用一句话快速判断：
-
-`如果这个能力要么运行在 Flutter 引擎外，要么依赖 Flutter 生态里没有封装好的原生 SDK / 系统组件，那么大概率就必须写原生文件。`
 
 ---
 
